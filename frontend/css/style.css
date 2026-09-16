@@ -2885,3 +2885,229 @@ p {
     width: 100%;
     margin-bottom: 30px;
 }
+/* =========================================================
+   GEO-NEURAL MAP + ENVIRONMENT SIDEBAR
+   ========================================================= */
+
+.geo-dashboard-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: stretch;
+    margin-top: 24px;
+}
+
+.geo-dashboard-layout .map-section {
+    margin-top: 0;
+    min-width: 0;
+}
+
+.geo-dashboard-layout .section-heading {
+    display: none;
+}
+
+.geo-dashboard-layout .map-wrapper {
+    height: 650px;
+    border-radius: 18px;
+}
+
+
+/* =========================================================
+   ENVIRONMENT SIDEBAR
+   ========================================================= */
+
+.environment-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.sidebar-heading {
+    padding: 4px 2px 8px;
+}
+
+.sidebar-heading h2 {
+    margin: 5px 0;
+    font-size: 21px;
+}
+
+.sidebar-heading p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #718096;
+}
+
+.weather-sidebar-card {
+    background: #ffffff;
+    border: 1px solid #dfe7df;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-weather-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.sidebar-weather-main strong {
+    font-size: 16px;
+}
+
+.sidebar-weather-main span {
+    font-size: 27px;
+    font-weight: 700;
+}
+
+.sidebar-weather-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    margin-top: 18px;
+}
+
+.sidebar-weather-stats div {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #edf2ed;
+}
+
+.sidebar-weather-stats span {
+    color: #718096;
+    font-size: 12px;
+}
+
+.sidebar-weather-stats strong {
+    font-size: 12px;
+}
+
+
+/* WEATHER RISK */
+
+.weather-risk-sidebar {
+    background: #f8fbf7;
+}
+
+.sidebar-risk-value {
+    font-size: 24px;
+    font-weight: 800;
+    margin-top: 7px;
+}
+
+.weather-risk-sidebar p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #718096;
+}
+
+
+/* FORECAST */
+
+.weather-sidebar-card h3 {
+    margin: 7px 0 12px;
+    font-size: 17px;
+}
+
+.sidebar-forecast {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-forecast .forecast-card {
+    padding: 10px;
+    border: 1px solid #e5ebe5;
+    border-radius: 10px;
+    background: #fafcfa;
+    font-size: 11px;
+}
+
+
+/* WEATHER NOTE */
+
+.weather-sidebar-note {
+    padding: 12px 14px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #718096;
+}
+
+
+/* =========================================================
+   SMALLER SENSOR RANGE
+   ========================================================= */
+
+#solumusMap .leaflet-interactive {
+    transition: opacity 0.2s ease;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+
+    .geo-dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .environment-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sidebar-heading {
+        grid-column: 1 / -1;
+    }
+
+    .weather-sidebar-note {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+
+    .geo-dashboard-layout .map-wrapper {
+        height: 500px;
+    }
+
+    .environment-sidebar {
+        display: flex;
+    }
+}
+/* =========================================================
+   SENSOR NODE MODAL
+   ========================================================= */
+
+.soil-modal {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    width: 390px;
+    max-width: calc(100vw - 30px);
+    pointer-events: none;
+}
+
+.soil-modal.active {
+    display: block;
+}
+
+.soil-modal-content {
+    pointer-events: auto;
+    background: #ffffff;
+    width: 100%;
+    max-height: 78vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.20);
+    border: 1px solid #dfe7df;
+}

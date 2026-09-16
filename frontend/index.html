@@ -1,1645 +1,2238 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#164b3b">
+    <title>SOLUMUS-V | Field Monitoring</title>
 
-    <meta
-        name="description"
-        content="SOLUMUS-V Geo-Neural Soil Monitoring and Recommendation System"
+    <!-- Leaflet map CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
-   <title>SOLUMUS-V WEBSITE</title>
-
-    <link rel="stylesheet" href="css/style.css">
-    <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
-<style>
-    /* =========================================================
-       SOLUMUS-V MAP
-    ========================================================= */
-
-    .map-section {
-        margin-top: 40px;
-    }
-
-    .map-wrapper {
-        position: relative;
-        width: 100%;
-        height: 600px;
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid #ddd;
-        background: #f3f3f3;
-    }
-
-    #solumusMap {
-        width: 100%;
-        height: 100%;
-    }
-
-    .map-legend {
-        position: absolute;
-        z-index: 1000;
-        bottom: 20px;
-        left: 20px;
-        background: white;
-        padding: 14px 16px;
-        border-radius: 10px;
-        box-shadow: 0 3px 15px rgba(0,0,0,0.15);
-        font-size: 13px;
-    }
-
-    .map-legend-title {
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 5px 0;
-    }
-
-    .legend-color {
-        width: 13px;
-        height: 13px;
-        border-radius: 50%;
-        border: 1px solid rgba(0,0,0,0.2);
-    }
-
-    .legend-good {
-        background: #38a169;
-    }
-
-    .legend-attention {
-        background: #d69e2e;
-    }
-
-    .legend-critical {
-        background: #e53e3e;
-    }
-
-    .legend-unassessed {
-        background: #718096;
-    }
-
-    /* =========================================================
-       SENSOR MODAL
-    ========================================================= */
-
-    .soil-modal {
-        display: none;
-        position: fixed;
-        z-index: 5000;
-        inset: 0;
-        background: rgba(0,0,0,0.45);
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .soil-modal.active {
-        display: flex;
-    }
-
-    .soil-modal-content {
-        background: white;
-        width: min(620px, 100%);
-        max-height: 90vh;
-        overflow-y: auto;
-        border-radius: 18px;
-        padding: 28px;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.25);
-    }
-
-    .soil-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px;
-        margin-bottom: 22px;
-    }
-
-    .soil-modal-header h2 {
-        margin: 4px 0;
-    }
-
-    .modal-close {
-        border: none;
-        background: transparent;
-        font-size: 28px;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    .health-tier {
-        display: inline-block;
-        padding: 8px 14px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .health-tier.good {
-        background: #c6f6d5;
-        color: #22543d;
-    }
-
-    .health-tier.attention {
-        background: #feebc8;
-        color: #744210;
-    }
-
-    .health-tier.critical {
-        background: #fed7d7;
-        color: #742a2a;
-    }
-
-    .soil-parameter-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-top: 20px;
-    }
-
-    .soil-parameter {
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 14px;
-    }
-
-    .soil-parameter span {
-        display: block;
-        font-size: 12px;
-        color: #718096;
-        margin-bottom: 5px;
-    }
-
-    .soil-parameter strong {
-        font-size: 18px;
-    }
-
-    .recommendation-box {
-        margin-top: 20px;
-        padding: 16px;
-        border-radius: 12px;
-        background: #f7fafc;
-        border: 1px solid #e2e8f0;
-    }
-
-    .recommendation-box h3 {
-        margin-top: 0;
-        margin-bottom: 10px;
-    }
-
-    @media (max-width: 700px) {
-        .map-wrapper {
-            height: 450px;
+    <style>
+        :root {
+            --bg: #eef4ef;
+            --surface: #ffffff;
+            --soft: #f5f8f5;
+            --primary: #164b3b;
+            --primary-light: #2f725a;
+            --text: #18312a;
+            --muted: #687b73;
+            --border: #d9e4dc;
+            --good: #257a4d;
+            --warning: #e09b22;
+            --danger: #a53a3a;
+            --shadow: 0 12px 35px rgba(20, 65, 49, 0.12);
         }
 
-        .soil-parameter-grid {
-            grid-template-columns: 1fr;
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
         }
-    }
-</style>
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .top-header {
+            position: relative;
+            z-index: 1000;
+            background: linear-gradient(135deg, #123e31, #27684f);
+            color: white;
+            padding: 18px 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-inner {
+            width: min(1400px, calc(100% - 20px));
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            opacity: .82;
+        }
+
+        .status-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f0b429;
+        }
+
+        .status-pill.online .status-dot { background: #65d38a; }
+        .status-pill.offline .status-dot { background: #ff7777; }
+
+        main {
+            width: min(1400px, calc(100% - 40px));
+            margin: 24px auto 35px;
+        }
+
+        .page-heading {
+            margin-bottom: 15px;
+        }
+
+        .eyebrow {
+            color: var(--primary-light);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .page-heading h1 {
+            margin: 7px 0 5px;
+            font-size: clamp(30px, 4vw, 42px);
+            line-height: 1.05;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .map-shell {
+            position: relative;
+            height: calc(100vh - 245px);
+            min-height: 560px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #dfe8e1;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        #fieldMap {
+            width: 100%;
+            height: 100%;
+            min-height: 560px;
+        }
+
+        .leaflet-container {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .map-control-panel {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 900;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            width: 150px;
+        }
+
+        .map-control-button {
+            border: none;
+            border-radius: 11px;
+            padding: 11px 12px;
+            background: white;
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 7px 20px rgba(0,0,0,.13);
+            transition: transform .15s ease, background .15s ease;
+        }
+
+        .map-control-button:hover {
+            transform: translateY(-1px);
+            background: #f8fbf9;
+        }
+
+        .map-control-button.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .map-legend {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+            z-index: 900;
+            min-width: 170px;
+            padding: 13px;
+            border-radius: 13px;
+            background: rgba(255,255,255,.95);
+            box-shadow: 0 7px 22px rgba(0,0,0,.14);
+            border: 1px solid var(--border);
+        }
+
+        .legend-title {
+            margin-bottom: 9px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-good { background: var(--good); }
+        .legend-warning { background: var(--warning); }
+        .legend-danger { background: var(--danger); }
+
+        .sensor-marker {
+            position: relative;
+            width: 30px;
+            height: 30px;
+        }
+
+        .sensor-marker-pulse,
+        .sensor-marker-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .sensor-marker-pulse {
+            width: 22px;
+            height: 22px;
+            opacity: .28;
+            animation: sensorPulse 1.8s infinite;
+        }
+
+        .sensor-marker-dot {
+            width: 13px;
+            height: 13px;
+            border: 3px solid white;
+            box-shadow: 0 2px 7px rgba(0,0,0,.35);
+        }
+
+        .marker-good .sensor-marker-pulse,
+        .marker-good .sensor-marker-dot {
+            background: var(--good);
+        }
+
+        .marker-attention .sensor-marker-pulse,
+        .marker-attention .sensor-marker-dot {
+            background: var(--warning);
+        }
+
+        .marker-critical .sensor-marker-pulse,
+        .marker-critical .sensor-marker-dot {
+            background: var(--danger);
+        }
+
+        @keyframes sensorPulse {
+            0% { transform: translate(-50%, -50%) scale(.75); opacity: .3; }
+            70% { transform: translate(-50%, -50%) scale(1.7); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(.75); opacity: 0; }
+        }
+
+        /* Weather drawer */
+        .weather-tab {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            z-index: 1200;
+            width: 38px;
+            height: 92px;
+            border: none;
+            border-radius: 12px 0 0 12px;
+            background: white;
+            color: var(--primary);
+            box-shadow: -4px 4px 16px rgba(0,0,0,.14);
+            cursor: pointer;
+            font-size: 19px;
+        }
+
+        .weather-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(390px, 94vw);
+            height: 100vh;
+            z-index: 3000;
+            background: white;
+            box-shadow: -12px 0 40px rgba(0,0,0,.20);
+            transform: translateX(100%);
+            transition: transform .3s ease;
+            overflow-y: auto;
+        }
+
+        .weather-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .weather-sidebar-inner {
+            padding: 28px 23px 35px;
+        }
+
+        .weather-close,
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            background: var(--soft);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .weather-close {
+            margin-bottom: 22px;
+        }
+
+        .weather-sidebar h2 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        .weather-location {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .weather-current {
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 15px;
+            background: var(--soft);
+            border: 1px solid var(--border);
+        }
+
+        .weather-condition {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .weather-temperature {
+            margin-top: 5px;
+            font-size: 36px;
+            font-weight: 800;
+        }
+
+        .weather-detail {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .weather-detail:last-child {
+            border-bottom: none;
+        }
+
+        .weather-detail span {
+            color: var(--muted);
+        }
+
+        .weather-risk {
+            margin-top: 17px;
+            padding: 15px;
+            border-radius: 13px;
+            background: #f7f9f7;
+            border: 1px solid var(--border);
+        }
+
+        .risk-label {
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        #weatherRisk {
+            margin-top: 5px;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        #weatherRiskMessage {
+            margin: 7px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .forecast {
+            margin-top: 20px;
+        }
+
+        .forecast h3 {
+            margin: 0 0 10px;
+            font-size: 17px;
+        }
+
+        .forecast-card {
+            padding: 13px;
+            margin-bottom: 9px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+        }
+
+        .forecast-date {
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .forecast-info {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .weather-note {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 11px;
+            background: var(--soft);
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* Shared modals */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 4000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(10,30,22,.58);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal-card {
+            position: relative;
+            width: min(650px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 26px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 25px 80px rgba(0,0,0,.28);
+        }
+
+        .modal-card h2 {
+            margin: 0 38px 5px 0;
+            font-size: 25px;
+        }
+
+        .modal-description {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 15px;
+        }
+
+        .health-panel {
+            padding: 19px;
+            border-radius: 16px;
+            background: var(--soft);
+            border: 1px solid var(--border);
+        }
+
+        .health-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .health-label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .health-score {
+            margin-top: 4px;
+            font-size: 44px;
+            font-weight: 900;
+        }
+
+        .health-badge {
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .health-good {
+            color: var(--good);
+            background: #eaf7ef;
+        }
+
+        .health-warning {
+            color: #8a5900;
+            background: #fff3d9;
+        }
+
+        .health-danger {
+            color: var(--danger);
+            background: #fdeaea;
+        }
+
+        .health-message {
+            margin: 10px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .parameter-section {
+            margin-top: 18px;
+        }
+
+        .section-title {
+            margin-bottom: 9px;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .parameters-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px;
+        }
+
+        .parameter-card {
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: white;
+        }
+
+        .parameter-card span {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .parameter-card strong {
+            font-size: 20px;
+        }
+
+        .parameter-unit {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .recommendation-box {
+            margin-top: 18px;
+            padding: 15px;
+            border-radius: 13px;
+            background: #f7f9f7;
+            border: 1px solid var(--border);
+        }
+
+        .recommendation-box p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .location-status {
+            padding: 13px;
+            border-radius: 11px;
+            background: var(--soft);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .location-status.success {
+            background: #eaf7ef;
+            border-color: #72b88f;
+            color: var(--good);
+        }
+
+        .location-status.error {
+            background: #fdeaea;
+            border-color: #d66c6c;
+            color: var(--danger);
+        }
+
+        .coordinates {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .coordinate-box {
+            padding: 12px;
+            background: var(--soft);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+        }
+
+        .coordinate-box span {
+            display: block;
+            color: var(--muted);
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .coordinate-box strong {
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            border: none;
+            border-radius: 10px;
+            padding: 11px 14px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .action-button.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-button.secondary {
+            background: var(--soft);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .action-button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .map-node-popup {
+            min-width: 180px;
+        }
+
+        .map-node-popup-title {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .map-node-popup-status {
+            color: var(--muted);
+            font-size: 11px;
+            margin-bottom: 9px;
+        }
+
+        .map-node-popup-button {
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            background: var(--primary);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        @media (max-width: 760px) {
+            .top-header {
+                padding: 15px;
+            }
+
+            .header-inner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .status-group {
+                justify-content: flex-start;
+            }
+
+            main {
+                width: calc(100% - 18px);
+                margin-top: 12px;
+            }
+
+            .map-shell {
+                height: calc(100vh - 215px);
+                min-height: 500px;
+            }
+
+            #fieldMap {
+                min-height: 500px;
+            }
+
+            .map-legend {
+                right: 10px;
+                bottom: 10px;
+                min-width: 155px;
+                padding: 10px;
+            }
+
+            .map-control-panel {
+                top: 10px;
+                left: 10px;
+            }
+
+            .parameters-grid,
+            .coordinates {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-card {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- =========================================================
-     HEADER
-========================================================= -->
-
-<header class="site-header">
-
+<header class="top-header">
     <div class="header-inner">
-
         <div class="brand">
-
-            <div class="brand-mark">
-                SV
-            </div>
-
-            <div class="brand-text">
-                <span class="brand-eyebrow">
-                    SMART AGRICULTURE
-                </span>
-
-                <h1>SOLUMUS-VOLTES V</h1>
-
-                <p>
-                    Geo-Neural Soil Monitoring &amp;
-                    Recommendation System
-                </p>
-            </div>
-
-        </div>
-
-        <div class="system-status">
-            <span class="status-dot"></span>
-
-            <div>
-                <strong>System Online</strong>
-                <small>Dashboard active</small>
+            <div class="brand-title">SOLUMUS-V</div>
+            <div class="brand-subtitle">
+                Geo-Neural Soil Monitoring and Recommendation System
             </div>
         </div>
 
+        <div class="status-group">
+            <div id="systemStatus" class="status-pill">
+                <span class="status-dot"></span>
+                <span id="systemStatusText">SOLUMUS-V CONNECTING...</span>
+            </div>
+
+            <div id="sensorStatus" class="status-pill">
+                <span class="status-dot"></span>
+                <span id="sensorStatusText">SENSOR NODE CONNECTING...</span>
+            </div>
+        </div>
     </div>
-
-
-    <nav class="main-nav">
-
-        <div class="nav-inner">
-
-            <a href="#soilHealthSection" class="active">
-                Overview
-            </a>
-
-            <a href="#soilMonitoringSection">
-                Monitoring
-            </a>
-
-            <a href="#recommendationSection">
-                Recommendations
-            </a>
-
-            <a href="#weatherRiskSection">
-                Weather
-            </a>
-
-            <a href="#soilHistorySection">
-                History
-            </a>
-
-        </div>
-
-    </nav>
-
 </header>
 
-
-
-<!-- =========================================================
-     MAIN
-========================================================= -->
-
-<main class="dashboard">
-
-
-    <!-- PAGE INTRO -->
-
-    <section class="page-intro">
-
-        <div>
-
-            <span class="eyebrow">
-                FIELD MONITORING DASHBOARD
-            </span>
-
-            <h2>
-                Soil Intelligence Overview
-            </h2>
-
-            <p>
-                Real-time assessment of soil conditions,
-                environmental factors, and field recommendations.
-            </p>
-
-        </div>
-
-        <div class="live-indicator">
-            <span class="status-dot"></span>
-            Live data
-        </div>
-
-    </section>
-<!-- =====================================================
-     GEO-NEURAL FIELD MAP
-====================================================== -->
-
-<section
-    id="fieldMapSection"
-    class="map-section"
->
-
-    <div class="section-heading">
-
-        <div>
-            <span class="section-label">
-                GEO-NEURAL FIELD MONITORING
-            </span>
-
-            <h2>
-                Sensor Node Map
-            </h2>
-
-            <p>
-                Geographic locations and monitored zones of deployed
-                SOLUMUS-V sensor nodes.
-            </p>
-        </div>
-
-        <span class="section-number">
-            01
-        </span>
-
+<main>
+    <div class="page-heading">
+        <span class="eyebrow">FIELD MONITORING</span>
+        <h1>Soil Conditions by Location</h1>
+        <p>Select a sensor location to view its current soil condition.</p>
     </div>
 
-    <div class="map-wrapper">
+    <div class="map-shell">
+        <div id="fieldMap"></div>
 
-        <div id="solumusMap"></div>
+        <div class="map-control-panel">
+            <button id="locateButton" class="map-control-button primary" type="button">
+                LOCATE ME
+            </button>
+
+            <button id="addNodeButton" class="map-control-button" type="button">
+                + REGISTER SENSOR
+            </button>
+        </div>
+
+        <button
+            id="weatherTab"
+            class="weather-tab"
+            type="button"
+            aria-label="Open weather"
+            title="Weather"
+        >
+            ‹
+        </button>
 
         <div class="map-legend">
+            <div class="legend-title">SOIL CONDITION</div>
 
-            <div class="map-legend-title">
-                Soil Health Status
-            </div>
-
-            <div class="legend-item">
-                <span class="legend-color legend-good"></span>
+            <div class="legend-row">
+                <span class="legend-dot legend-good"></span>
                 Good
             </div>
 
-            <div class="legend-item">
-                <span class="legend-color legend-attention"></span>
-                Need Attention
+            <div class="legend-row">
+                <span class="legend-dot legend-warning"></span>
+                Needs Attention
             </div>
 
-            <div class="legend-item">
-                <span class="legend-color legend-critical"></span>
+            <div class="legend-row">
+                <span class="legend-dot legend-danger"></span>
                 Critical
             </div>
+        </div>
+    </div>
+</main>
 
-            <div class="legend-item">
-                <span class="legend-color legend-unassessed"></span>
-                No Sensor Data
-            </div>
+<!-- WEATHER SIDEBAR -->
+<aside id="weatherSidebar" class="weather-sidebar" aria-hidden="true">
+    <div class="weather-sidebar-inner">
+        <button id="weatherClose" class="weather-close" type="button" aria-label="Close weather">
+            ×
+        </button>
 
+        <h2>Weather</h2>
+        <div id="weatherLocation" class="weather-location">
+            Monitoring location
         </div>
 
-    </div>
-
-</section>
-<!-- =========================================================
-     SOIL NODE INFORMATION MODAL
-========================================================= -->
-
-<div
-    id="soilNodeModal"
-    class="soil-modal"
->
-
-    <div class="soil-modal-content">
-
-        <div class="soil-modal-header">
-
-            <div>
-                <span class="section-label">
-                    SENSOR NODE
-                </span>
-
-                <h2 id="modalNodeName">
-                    Sensor Node
-                </h2>
-
-                <span
-                    id="modalHealthTier"
-                    class="health-tier"
-                >
-                    --
-                </span>
+        <div class="weather-current">
+            <div id="weatherCondition" class="weather-condition">
+                Loading weather...
             </div>
 
+            <div id="weatherTemperature" class="weather-temperature">
+                -- °C
+            </div>
+
+            <div class="weather-detail">
+                <span>Relative Humidity</span>
+                <strong id="weatherHumidity">-- %</strong>
+            </div>
+
+            <div class="weather-detail">
+                <span>Rain</span>
+                <strong id="weatherRain">-- mm</strong>
+            </div>
+
+            <div class="weather-detail">
+                <span>Wind</span>
+                <strong id="weatherWind">-- km/h</strong>
+            </div>
+        </div>
+
+        <div class="weather-risk">
+            <div class="risk-label">WEATHER ADVISORY / RISK</div>
+            <div id="weatherRisk">--</div>
+            <p id="weatherRiskMessage">
+                Loading weather risk...
+            </p>
+        </div>
+
+        <div class="forecast">
+            <h3>3-Day Forecast</h3>
+            <div id="forecastContainer">
+                <div class="forecast-card">
+                    Loading forecast...
+                </div>
+            </div>
+        </div>
+
+        <div class="weather-note">
+            Weather information is environmental data obtained separately
+            from the soil sensor. Use it together with actual field
+            observations and soil readings.
+        </div>
+    </div>
+</aside>
+
+<!-- LOCATION MODAL -->
+<div id="locationModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card">
+        <button
+            id="locationModalClose"
+            class="modal-close"
+            type="button"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+        <h2>Register Sensor Location</h2>
+
+        <p class="modal-description">
+            Capture the geographic position where Node 01 is deployed.
+            The saved position is used as the fixed monitoring location
+            until it is intentionally changed.
+        </p>
+
+        <div id="locationStatus" class="location-status">
+            No new location captured yet.
+        </div>
+
+        <div class="coordinates">
+            <div class="coordinate-box">
+                <span>LATITUDE</span>
+                <strong id="latitudeValue">--</strong>
+            </div>
+
+            <div class="coordinate-box">
+                <span>LONGITUDE</span>
+                <strong id="longitudeValue">--</strong>
+            </div>
+        </div>
+
+        <div class="modal-actions">
             <button
-                id="closeSoilModal"
-                class="modal-close"
+                id="captureLocationButton"
+                class="action-button primary"
                 type="button"
             >
-                ×
+                CAPTURE CURRENT LOCATION
             </button>
 
+            <button
+                id="saveNodeButton"
+                class="action-button secondary"
+                type="button"
+                disabled
+            >
+                SAVE NODE LOCATION
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- NODE SOIL MODAL -->
+<div id="nodeModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card">
+        <button
+            id="nodeModalClose"
+            class="modal-close"
+            type="button"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+        <h2>Soil Sampling Location</h2>
+
+        <p class="modal-description">
+            <strong id="modalNodeId">SOLUMUS-V-01</strong> —
+            current soil condition from the monitoring node.
+        </p>
+
+        <div class="health-panel">
+            <div class="health-top">
+                <div>
+                    <div class="health-label">OVERALL SOIL HEALTH</div>
+                    <div id="nodeHealthScore" class="health-score">--%</div>
+                </div>
+
+                <div id="nodeHealthBadge" class="health-badge health-warning">
+                    WAITING
+                </div>
+            </div>
+
+            <p id="nodeHealthMessage" class="health-message">
+                Waiting for the latest soil reading.
+            </p>
         </div>
 
-        <div class="soil-parameter-grid">
+        <div class="parameter-section">
+            <div class="section-title">Soil Parameters</div>
 
-            <div class="soil-parameter">
-                <span>MOISTURE</span>
-                <strong id="modalMoisture">--</strong>
+            <div class="parameters-grid">
+                <div class="parameter-card">
+                    <span>Moisture</span>
+                    <strong id="nodeMoisture">--</strong>
+                    <span class="parameter-unit">%</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Temperature</span>
+                    <strong id="nodeTemperature">--</strong>
+                    <span class="parameter-unit">°C</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>pH</span>
+                    <strong id="nodePH">--</strong>
+                    <span class="parameter-unit">pH</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Electrical Conductivity</span>
+                    <strong id="nodeEC">--</strong>
+                    <span class="parameter-unit">mS/cm</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Nitrogen</span>
+                    <strong id="nodeNitrogen">--</strong>
+                    <span class="parameter-unit">mg/kg</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Phosphorus</span>
+                    <strong id="nodePhosphorus">--</strong>
+                    <span class="parameter-unit">mg/kg</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Potassium</span>
+                    <strong id="nodePotassium">--</strong>
+                    <span class="parameter-unit">mg/kg</span>
+                </div>
+
+                <div class="parameter-card">
+                    <span>Irrigation Risk</span>
+                    <strong id="nodeIrrigationRisk">--</strong>
+                    <span class="parameter-unit">current assessment</span>
+                </div>
             </div>
-
-            <div class="soil-parameter">
-                <span>pH</span>
-                <strong id="modalPh">--</strong>
-            </div>
-
-            <div class="soil-parameter">
-                <span>TEMPERATURE</span>
-                <strong id="modalTemperature">--</strong>
-            </div>
-
-            <div class="soil-parameter">
-                <span>ELECTRICAL CONDUCTIVITY</span>
-                <strong id="modalEc">--</strong>
-            </div>
-
-            <div class="soil-parameter">
-                <span>NITROGEN</span>
-                <strong id="modalNitrogen">--</strong>
-            </div>
-
-            <div class="soil-parameter">
-                <span>PHOSPHORUS</span>
-                <strong id="modalPhosphorus">--</strong>
-            </div>
-
-            <div class="soil-parameter">
-                <span>POTASSIUM</span>
-                <strong id="modalPotassium">--</strong>
-            </div>
-
         </div>
 
         <div class="recommendation-box">
-
-            <h3>
-                Recommended Action
-            </h3>
-
-            <p id="modalRecommendation">
-                Waiting for soil analysis...
+            <div class="section-title">Field Recommendation</div>
+            <p id="nodeRecommendation">
+                Waiting for the latest soil analysis.
             </p>
-
         </div>
-
     </div>
-
 </div>
 
-    <!-- =====================================================
-         SOIL HEALTH
-    ====================================================== -->
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <section
-        id="soilHealthSection"
-        class="health-section"
-    >
+<script>
+    /* =========================================================
+       CONFIGURATION
+    ========================================================= */
 
-        <div class="section-heading">
+    const API_URL = "https://solumus-v.onrender.com";
+    const NODE_ID = "SOLUMUS-V-01";
 
-            <div>
+    const DEFAULT_LOCATION = {
+        latitude: 10.3157,
+        longitude: 123.8854
+    };
 
-                <span class="section-label">
-                    PRIMARY ASSESSMENT
-                </span>
+    /*
+       This is an assumed visual monitoring/sampling area.
+       It is NOT a scientifically validated sensor sensing range.
+    */
+    const ASSUMED_MONITORING_RADIUS_METERS = 25;
 
-                <h2>
-                    Overall Soil Health
-                </h2>
+    const LOCATION_STORAGE_KEY =
+        "solumus_v_node_01_location";
 
-                <p>
-                   <p>
-    A quick look at the current condition of your monitored soil.
-</p>
-                </p>
+    let latestSoilData = null;
+    let currentLocation = null;
+    let map = null;
+    let nodeMarker = null;
+    let nodeCoverageCircle = null;
+    let userLocationMarker = null;
 
-            </div>
+    /* =========================================================
+       HELPERS
+    ========================================================= */
 
-            <span class="section-number">
-                01
-            </span>
+    function $(id) {
+        return document.getElementById(id);
+    }
 
-        </div>
+    function number(value, fallback = 0) {
+        const result = Number(value);
+        return Number.isFinite(result) ? result : fallback;
+    }
 
+    function firstValue(...values) {
+        for (const value of values) {
+            if (value !== undefined && value !== null && value !== "") {
+                return value;
+            }
+        }
+        return null;
+    }
 
-       <div class="health-dashboard">
+    function escapeHTML(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
 
-    <!-- SOIL HEALTH SCORE -->
-    <div class="health-score-area">
+    /* =========================================================
+       STATUS
+    ========================================================= */
 
-        <span class="metric-label">
-            SOIL HEALTH
-        </span>
+    function setSystemStatus(online) {
+        const pill = $("systemStatus");
+        const text = $("systemStatusText");
 
-        <div class="health-score">
-            <span id="soilHealthScore">
-                --
-            </span>
-        </div>
+        pill.classList.toggle("online", online);
+        pill.classList.toggle("offline", !online);
 
-        <div class="health-progress">
-            <div
-                id="soilHealthProgress"
-                class="health-progress-fill"
-            ></div>
-        </div>
+        text.textContent = online
+            ? "SOLUMUS-V ONLINE"
+            : "SOLUMUS-V OFFLINE";
+    }
 
-        <span class="health-caption">
-            Overall condition of monitored soil
-        </span>
+    function setSensorStatus(online) {
+        const pill = $("sensorStatus");
+        const text = $("sensorStatusText");
 
-    </div>
+        pill.classList.toggle("online", online);
+        pill.classList.toggle("offline", !online);
 
+        text.textContent = online
+            ? "SENSOR NODE ONLINE"
+            : "SENSOR NODE NO DATA";
+    }
 
-    <!-- CURRENT CONDITION -->
-    <div class="health-status-area">
+    /* =========================================================
+       MAP
+    ========================================================= */
 
-        <span class="metric-label">
-            CURRENT CONDITION
-        </span>
+    function initializeMap() {
+        map = L.map("fieldMap", {
+            zoomControl: true,
+            attributionControl: true
+        }).setView(
+            [
+                DEFAULT_LOCATION.latitude,
+                DEFAULT_LOCATION.longitude
+            ],
+            15
+        );
 
-        <div
-            id="soilHealthLevel"
-            class="health-status-badge"
-        >
-            --
-        </div>
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 20,
+                attribution:
+                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+        ).addTo(map);
 
-        <p id="soilHealthMessage">
-            Waiting for soil health analysis...
-        </p>
+        const saved = loadSavedLocation();
 
-    </div>
+        if (saved) {
+            currentLocation = saved;
+        } else {
+            currentLocation = {
+                ...DEFAULT_LOCATION
+            };
+        }
 
+        displayNode(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
 
-    <!-- SUPPORTING INFORMATION -->
-    <div class="health-summary">
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 250);
+    }
 
-        <div class="summary-stat">
-
-            <strong id="monitoredParameterCount">
-                7
-            </strong>
-
-            <span>
-                Parameters monitored
-            </span>
-
-        </div>
-
-
-        <div class="summary-stat">
-
-            <strong id="soilAlertCount">
+    function getHealthScore() {
+        return latestSoilData
+            ? number(
+                firstValue(
+                    latestSoilData.overallHealth,
+                    latestSoilData.soilHealth?.score
+                ),
                 0
-            </strong>
+            )
+            : 0;
+    }
 
-            <span>
-                Requiring attention
-            </span>
+    function getHealthCategory() {
+        if (!latestSoilData) return "WAITING";
 
-        </div>
+        return String(
+            firstValue(
+                latestSoilData.healthCategory,
+                latestSoilData.soilHealth?.level,
+                "NO DATA"
+            )
+        ).toUpperCase();
+    }
 
+    function getHealthClass() {
+        const score = getHealthScore();
 
-        <div class="summary-stat">
+        if (!latestSoilData) {
+            return "marker-good";
+        }
 
-            <strong id="soilUpdateStatus">
-                LIVE
-            </strong>
+        if (score >= 80) return "marker-good";
+        if (score >= 60) return "marker-attention";
 
-            <span>
-                Monitoring status
-            </span>
+        return "marker-critical";
+    }
 
-        </div>
+    function getCoverageColor() {
+        const score = getHealthScore();
 
-    </div>
+        if (!latestSoilData) return "#257a4d";
+        if (score >= 80) return "#257a4d";
+        if (score >= 60) return "#e09b22";
 
-</div>
-   
+        return "#a53a3a";
+    }
 
-    <!-- =====================================================
-         SOIL MONITORING
-    ====================================================== -->
+    function createNodeIcon() {
+        return L.divIcon({
+            className: "",
+            html: `
+                <div class="sensor-marker ${getHealthClass()}">
+                    <div class="sensor-marker-pulse"></div>
+                    <div class="sensor-marker-dot"></div>
+                </div>
+            `,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
+        });
+    }
 
-    <section
-        id="soilMonitoringSection"
-        class="monitoring-section"
-    >
+    function createNodePopup() {
+        const score = latestSoilData
+            ? getHealthScore()
+            : null;
 
-        <div class="section-heading">
+        const category = getHealthCategory();
 
-            <div>
-
-                <span class="section-label">
-                    SENSOR INTELLIGENCE
-                </span>
-
-                <h2>
-                    Live Soil Monitoring
-                </h2>
-
-                <p>
-                    Current measurements from the SOLUMUS-V
-                    multi-parameter soil sensor.
-                </p>
-
-            </div>
-
-            <span class="live-badge">
-                <span class="live-dot"></span>
-                LIVE
-            </span>
-
-        </div>
-
-
-
-        <!-- =================================================
-             SENSOR CARDS
-        ================================================== -->
-
-        <div class="sensor-grid">
-
-
-            <!-- MOISTURE -->
-
-            <article class="sensor-card moisture-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL WATER
-                        </span>
-
-                        <h3>
-                            Moisture
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        M
-                    </span>
-
+        return `
+            <div class="map-node-popup">
+                <div class="map-node-popup-title">
+                    ${escapeHTML(NODE_ID)}
                 </div>
 
-                <div class="sensor-value">
-                    <span id="moisture">--</span>
+                <div class="map-node-popup-status">
+                    Overall Soil Health:
+                    ${score === null ? "--" : score + "%"}
+                    · ${escapeHTML(category)}
                 </div>
 
-                <span class="sensor-unit">
-                    Volumetric moisture (%)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Indicates the amount of water currently
-                    present in the soil.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- TEMPERATURE -->
-
-            <article class="sensor-card temperature-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL CONDITION
-                        </span>
-
-                        <h3>
-                            Temperature
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        T
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="soilTemperature">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Soil temperature (°C)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Represents the current temperature of the
-                    monitored soil.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- PH -->
-
-            <article class="sensor-card ph-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL CHEMISTRY
-                        </span>
-
-                        <h3>
-                            pH Level
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        pH
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="ph">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    pH scale
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Indicates whether the soil condition is
-                    acidic, neutral, or alkaline.
-                </p>
-
-                <div class="ph-scale">
-
-                    <span>Acidic</span>
-
-                    <div class="ph-track">
-                        <span></span>
-                    </div>
-
-                    <span>Alkaline</span>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- EC -->
-
-            <article class="sensor-card ec-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL CHEMISTRY
-                        </span>
-
-                        <h3>
-                            Electrical Conductivity
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        EC
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="ec">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Soil conductivity (mS/cm)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Indicates the electrical conductivity of
-                    the soil, related to dissolved salts.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- NITROGEN -->
-
-            <article class="sensor-card nitrogen-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL NUTRIENT
-                        </span>
-
-                        <h3>
-                            Nitrogen
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        N
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="nitrogen">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Available nitrogen (mg/kg)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Measures available nitrogen in the
-                    monitored soil.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- PHOSPHORUS -->
-
-            <article class="sensor-card phosphorus-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL NUTRIENT
-                        </span>
-
-                        <h3>
-                            Phosphorus
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        P
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="phosphorus">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Available phosphorus (mg/kg)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Measures available phosphorus supporting
-                    plant growth and development.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- POTASSIUM -->
-
-            <article class="sensor-card potassium-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SOIL NUTRIENT
-                        </span>
-
-                        <h3>
-                            Potassium
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        K
-                    </span>
-
-                </div>
-
-                <div class="sensor-value">
-                    <span id="potassium">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Available potassium (mg/kg)
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Monitoring</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Measures available potassium in the
-                    monitored soil.
-                </p>
-
-                <div class="sensor-line">
-                    <span></span>
-                </div>
-
-            </article>
-
-
-
-            <!-- LAST UPDATE -->
-
-            <article class="sensor-card update-card">
-
-                <div class="sensor-top">
-
-                    <div>
-                        <span class="sensor-category">
-                            SYSTEM
-                        </span>
-
-                        <h3>
-                            Last Update
-                        </h3>
-                    </div>
-
-                    <span class="sensor-code">
-                        SYNC
-                    </span>
-
-                </div>
-
-                <div class="sensor-value update-value">
-                    <span id="lastUpdate">--</span>
-                </div>
-
-                <span class="sensor-unit">
-                    Latest sensor synchronization
-                </span>
-
-                <div class="sensor-status">
-                    <span class="status-dot"></span>
-                    <strong>Live connection</strong>
-                </div>
-
-                <p class="sensor-description">
-                    Displays the latest time the dashboard
-                    received sensor information.
-                </p>
-
-            </article>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         DECISION SUPPORT
-    ====================================================== -->
-
-    <section class="decision-grid">
-
-
-        <!-- SOIL RECOMMENDATIONS -->
-
-        <section
-            id="recommendationSection"
-            class="decision-card recommendation-card"
-        >
-
-            <div class="section-heading compact">
-
-                <div>
-
-                    <span class="section-label">
-                        DECISION SUPPORT
-                    </span>
-
-                    <h2>
-                        Soil Recommendations
-                    </h2>
-
-                    <p>
-                        Suggested actions based on current
-                        soil sensor readings.
-                    </p>
-
-                </div>
-
-                <span class="decision-icon">
-                    →
-                </span>
-
-            </div>
-
-
-            <div class="recommendation-content">
-
-                <ul id="recommendationList">
-
-                    <li>
-                        Waiting for soil analysis...
-                    </li>
-
-                </ul>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- WEATHER RISK -->
-
-        <section
-            id="weatherRiskSection"
-            class="decision-card weather-risk-card"
-        >
-
-            <div class="section-heading compact">
-
-                <div>
-
-                    <span class="section-label">
-                        ENVIRONMENTAL INTELLIGENCE
-                    </span>
-
-                    <h2>
-                        Weather Risk
-                    </h2>
-
-                    <p>
-                        Independent assessment based on
-                        current weather conditions.
-                    </p>
-
-                </div>
-
-                <span class="weather-badge">
-                    WEATHER
-                </span>
-
-            </div>
-
-
-            <div class="weather-risk-content">
-
-                <span class="metric-label">
-                    CURRENT WEATHER RISK
-                </span>
-
-                <div
-                    id="weatherRisk"
-                    class="risk-value"
+                <button
+                    class="map-node-popup-button"
+                    type="button"
+                    onclick="openNodeModal()"
                 >
-                    --
+                    VIEW SOIL DATA
+                </button>
+            </div>
+        `;
+    }
+
+    function displayNode(latitude, longitude) {
+        const lat = Number(latitude);
+        const lng = Number(longitude);
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng) ||
+            !map
+        ) {
+            return;
+        }
+
+        currentLocation = {
+            latitude: lat,
+            longitude: lng
+        };
+
+        if (nodeMarker) {
+            map.removeLayer(nodeMarker);
+        }
+
+        if (nodeCoverageCircle) {
+            map.removeLayer(nodeCoverageCircle);
+        }
+
+        nodeMarker = L.marker(
+            [lat, lng],
+            {
+                icon: createNodeIcon(),
+                keyboard: true,
+                title: NODE_ID
+            }
+        ).addTo(map);
+
+        /*
+           IMPORTANT:
+           Clicking the sensor node opens the soil modal directly.
+           The popup is also bound as a secondary interaction.
+        */
+        nodeMarker.on("click", () => {
+            openNodeModal();
+        });
+
+        nodeMarker.bindPopup(
+            createNodePopup()
+        );
+
+        nodeCoverageCircle = L.circle(
+            [lat, lng],
+            {
+                radius: ASSUMED_MONITORING_RADIUS_METERS,
+                color: getCoverageColor(),
+                fillColor: getCoverageColor(),
+                fillOpacity: 0.10,
+                weight: 2
+            }
+        ).addTo(map);
+
+        /*
+           Keep the marker above the coverage circle.
+        */
+        nodeMarker.bringToFront();
+    }
+
+    function refreshNodeVisuals() {
+        if (!map || !currentLocation) return;
+
+        displayNode(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+    }
+
+    /* =========================================================
+       SOIL DATA
+    ========================================================= */
+
+    async function loadSoilData() {
+        try {
+            const response = await fetch(
+                `${API_URL}/api/soil-data`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Soil API HTTP ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            latestSoilData = data;
+
+            setSystemStatus(true);
+            setSensorStatus(true);
+
+            updateNodeInterface();
+            refreshNodeVisuals();
+
+        } catch (error) {
+            console.error(
+                "Soil data error:",
+                error
+            );
+
+            /*
+               The backend can still be online even when a current
+               soil reading cannot be retrieved.
+            */
+            setSensorStatus(false);
+
+            if (!latestSoilData) {
+                setSystemStatus(false);
+            }
+        }
+    }
+
+    function updateNodeInterface() {
+        if (!latestSoilData) return;
+
+        const score = getHealthScore();
+        const category = getHealthCategory();
+
+        $("modalNodeId").textContent = NODE_ID;
+
+        $("nodeHealthScore").textContent =
+            `${Math.round(score)}%`;
+
+        $("nodeHealthBadge").textContent =
+            category;
+
+        $("nodeHealthBadge").className =
+            "health-badge " +
+            getHealthBadgeClass(score);
+
+        $("nodeHealthMessage").textContent =
+            getHealthMessage(score);
+
+        const moisture = firstValue(
+            latestSoilData.moisture,
+            latestSoilData.moisture_percent
+        );
+
+        const temperature = firstValue(
+            latestSoilData.temperature,
+            latestSoilData.temperature_2m
+        );
+
+        const ph = firstValue(
+            latestSoilData.ph,
+            latestSoilData.pH
+        );
+
+        const ec = firstValue(
+            latestSoilData.ec,
+            latestSoilData.electricalConductivity
+        );
+
+        const nitrogen = firstValue(
+            latestSoilData.nitrogen,
+            latestSoilData.N
+        );
+
+        const phosphorus = firstValue(
+            latestSoilData.phosphorus,
+            latestSoilData.P
+        );
+
+        const potassium = firstValue(
+            latestSoilData.potassium,
+            latestSoilData.K
+        );
+
+        $("nodeMoisture").textContent =
+            formatValue(moisture, 1);
+
+        $("nodeTemperature").textContent =
+            formatValue(temperature, 1);
+
+        $("nodePH").textContent =
+            formatValue(ph, 2);
+
+        $("nodeEC").textContent =
+            formatValue(ec, 2);
+
+        $("nodeNitrogen").textContent =
+            formatValue(nitrogen, 1);
+
+        $("nodePhosphorus").textContent =
+            formatValue(phosphorus, 1);
+
+        $("nodePotassium").textContent =
+            formatValue(potassium, 1);
+
+        const irrigationRisk =
+            firstValue(
+                latestSoilData.irrigationRisk,
+                latestSoilData.soilHealth?.irrigationRisk,
+                "—"
+            );
+
+        $("nodeIrrigationRisk").textContent =
+            String(irrigationRisk);
+
+        $("nodeRecommendation").textContent =
+            getRecommendationText();
+    }
+
+    function formatValue(value, decimals = 1) {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            return "--";
+        }
+
+        const n = Number(value);
+
+        if (!Number.isFinite(n)) {
+            return String(value);
+        }
+
+        return n.toFixed(decimals);
+    }
+
+    function getHealthBadgeClass(score) {
+        if (score >= 80) return "health-good";
+        if (score >= 60) return "health-warning";
+
+        return "health-danger";
+    }
+
+    function getHealthMessage(score) {
+        if (score >= 80) {
+            return "The latest monitored soil parameters are generally within favorable configured ranges.";
+        }
+
+        if (score >= 60) {
+            return "The current soil readings are generally acceptable, but some parameters may require attention.";
+        }
+
+        return "Several current soil parameters are outside the configured favorable ranges. Review the field condition.";
+    }
+
+    function getRecommendationText() {
+        const recommendation =
+            firstValue(
+                latestSoilData?.recommendation,
+                latestSoilData?.recommendations
+            );
+
+        if (Array.isArray(recommendation)) {
+            return recommendation.join(" ");
+        }
+
+        if (
+            recommendation &&
+            typeof recommendation === "object"
+        ) {
+            return Object.values(recommendation)
+                .filter(Boolean)
+                .join(" ");
+        }
+
+        if (recommendation) {
+            return String(recommendation);
+        }
+
+        const score = getHealthScore();
+
+        if (score >= 80) {
+            return "Maintain current field management practices and continue monitoring the soil parameters.";
+        }
+
+        if (score >= 60) {
+            return "Review the parameters that are outside the configured favorable ranges and monitor the field condition.";
+        }
+
+        return "Review the current soil condition before making field-management decisions and consider additional field assessment.";
+    }
+
+    /* =========================================================
+       NODE MODAL
+    ========================================================= */
+
+    function openNodeModal() {
+        updateNodeInterface();
+
+        $("nodeModal").classList.add("open");
+        $("nodeModal").setAttribute(
+            "aria-hidden",
+            "false"
+        );
+    }
+
+    function closeNodeModal() {
+        $("nodeModal").classList.remove("open");
+        $("nodeModal").setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+    /* =========================================================
+       LOCATION STORAGE
+    ========================================================= */
+
+    function saveLocationLocally(latitude, longitude) {
+        const location = {
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            savedAt: Date.now()
+        };
+
+        localStorage.setItem(
+            LOCATION_STORAGE_KEY,
+            JSON.stringify(location)
+        );
+
+        currentLocation = location;
+    }
+
+    function loadSavedLocation() {
+        try {
+            const raw = localStorage.getItem(
+                LOCATION_STORAGE_KEY
+            );
+
+            if (!raw) return null;
+
+            const location = JSON.parse(raw);
+
+            if (
+                !Number.isFinite(
+                    Number(location.latitude)
+                ) ||
+                !Number.isFinite(
+                    Number(location.longitude)
+                )
+            ) {
+                return null;
+            }
+
+            return {
+                latitude: Number(location.latitude),
+                longitude: Number(location.longitude),
+                savedAt: location.savedAt
+            };
+
+        } catch {
+            return null;
+        }
+    }
+
+    /* =========================================================
+       LOCATION MODAL
+    ========================================================= */
+
+    function openLocationModal() {
+        $("locationModal").classList.add("open");
+        $("locationModal").setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        const saved = loadSavedLocation();
+
+        if (saved) {
+            $("latitudeValue").textContent =
+                saved.latitude.toFixed(6);
+
+            $("longitudeValue").textContent =
+                saved.longitude.toFixed(6);
+
+            currentLocation = saved;
+
+            $("saveNodeButton").disabled = false;
+
+            setLocationStatus(
+                "A saved Node 01 location already exists. You can capture a new location if the sensor has been moved.",
+                "success"
+            );
+        }
+    }
+
+    function closeLocationModal() {
+        $("locationModal").classList.remove("open");
+        $("locationModal").setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+    function setLocationStatus(message, type = "") {
+        const element = $("locationStatus");
+
+        element.textContent = message;
+        element.className =
+            "location-status " + type;
+    }
+
+    function captureCurrentLocation() {
+        if (!navigator.geolocation) {
+            setLocationStatus(
+                "Geolocation is not supported by this browser.",
+                "error"
+            );
+            return;
+        }
+
+        $("captureLocationButton").disabled = true;
+
+        setLocationStatus(
+            "Requesting the current device location...",
+            ""
+        );
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+                currentLocation = {
+                    latitude,
+                    longitude
+                };
+
+                $("latitudeValue").textContent =
+                    latitude.toFixed(6);
+
+                $("longitudeValue").textContent =
+                    longitude.toFixed(6);
+
+                $("saveNodeButton").disabled = false;
+
+                setLocationStatus(
+                    "Current device location captured. Save it to assign this point to Node 01.",
+                    "success"
+                );
+
+                map.setView(
+                    [latitude, longitude],
+                    18
+                );
+
+                if (userLocationMarker) {
+                    map.removeLayer(
+                        userLocationMarker
+                    );
+                }
+
+                userLocationMarker =
+                    L.circleMarker(
+                        [latitude, longitude],
+                        {
+                            radius: 7,
+                            color: "#164b3b",
+                            fillColor: "#2f725a",
+                            fillOpacity: .9,
+                            weight: 3
+                        }
+                    ).addTo(map);
+
+                $("captureLocationButton").disabled = false;
+            },
+
+            error => {
+                let message =
+                    "Unable to get your current location.";
+
+                if (error.code === error.PERMISSION_DENIED) {
+                    message =
+                        "Location permission was denied. Allow location access for localhost and try again.";
+                } else if (
+                    error.code === error.POSITION_UNAVAILABLE
+                ) {
+                    message =
+                        "The device location is unavailable. Check the device location service.";
+                } else if (
+                    error.code === error.TIMEOUT
+                ) {
+                    message =
+                        "Location request timed out. Move to an open area and try again.";
+                }
+
+                setLocationStatus(
+                    message,
+                    "error"
+                );
+
+                $("captureLocationButton").disabled =
+                    false;
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 30000
+            }
+        );
+    }
+
+    function saveNodeLocation() {
+        if (!currentLocation) return;
+
+        saveLocationLocally(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+
+        displayNode(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+
+        map.setView(
+            [
+                currentLocation.latitude,
+                currentLocation.longitude
+            ],
+            17
+        );
+
+        setLocationStatus(
+            "Node 01 location saved on this monitoring device. The map will use this fixed location until it is intentionally changed.",
+            "success"
+        );
+
+        $("saveNodeButton").disabled = true;
+
+        loadWeather(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+    }
+
+    /* =========================================================
+       LOCATE ME
+    ========================================================= */
+
+    function locateMe() {
+        if (!navigator.geolocation) {
+            alert(
+                "Geolocation is not supported by this browser."
+            );
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const latitude =
+                    position.coords.latitude;
+
+                const longitude =
+                    position.coords.longitude;
+
+                map.setView(
+                    [latitude, longitude],
+                    18
+                );
+
+                if (userLocationMarker) {
+                    map.removeLayer(
+                        userLocationMarker
+                    );
+                }
+
+                userLocationMarker =
+                    L.circleMarker(
+                        [latitude, longitude],
+                        {
+                            radius: 7,
+                            color: "#164b3b",
+                            fillColor: "#2f725a",
+                            fillOpacity: .9,
+                            weight: 3
+                        }
+                    )
+                    .addTo(map)
+                    .bindPopup(
+                        "Current device location"
+                    )
+                    .openPopup();
+            },
+
+            error => {
+                console.error(
+                    "Geolocation error:",
+                    error
+                );
+
+                alert(
+                    "Unable to get your current location. Please allow location access for localhost."
+                );
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 30000
+            }
+        );
+    }
+
+    /* =========================================================
+       WEATHER
+    ========================================================= */
+
+    async function loadWeather(latitude, longitude) {
+        if (
+            !Number.isFinite(Number(latitude)) ||
+            !Number.isFinite(Number(longitude))
+        ) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_URL}/api/weather?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Weather HTTP ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            renderWeather(data);
+
+        } catch (error) {
+            console.error(
+                "Weather error:",
+                error
+            );
+
+            $("weatherCondition").textContent =
+                "Weather unavailable";
+
+            $("weatherTemperature").textContent =
+                "-- °C";
+
+            $("weatherRisk").textContent =
+                "--";
+
+            $("weatherRiskMessage").textContent =
+                "Unable to retrieve weather data.";
+
+            $("forecastContainer").innerHTML = `
+                <div class="forecast-card">
+                    Weather data could not be loaded.
                 </div>
-
-                <p id="weatherRiskMessage">
-                    Waiting for weather analysis...
-                </p>
-
-            </div>
-
-        </section>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         CURRENT WEATHER
-    ====================================================== -->
-
-    <section class="weather-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    ENVIRONMENTAL DATA
-                </span>
-
-                <h2>
-                    Current Weather
-                </h2>
-
-                <p>
-                    Weather conditions at the testing-site
-                    location.
-                </p>
-
-            </div>
-
-            <span class="weather-badge">
-                WEATHER
-            </span>
-
-        </div>
-
-
-        <div class="weather-main">
-
-            <div class="weather-condition">
-
-                <span class="metric-label">
-                    CURRENT CONDITION
-                </span>
-
-                <strong id="weatherCondition">
-                    Loading...
-                </strong>
-
-            </div>
-
-
-            <div class="weather-temperature">
-
-                <span id="weatherTemperature">
-                    -- °C
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="weather-details">
-
-
-            <div class="weather-stat">
-
-                <span>
-                    HUMIDITY
-                </span>
-
-                <strong id="humidity">
-                    -- %
-                </strong>
-
-            </div>
-
-
-            <div class="weather-stat">
-
-                <span>
-                    RAINFALL
-                </span>
-
-                <strong id="rainfall">
-                    -- mm
-                </strong>
-
-            </div>
-
-
-            <div class="weather-stat">
-
-                <span>
-                    WIND SPEED
-                </span>
-
-                <strong id="windSpeed">
-                    -- km/h
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="weather-note">
-
-            <span>i</span>
-
-            <p>
-                Weather assessment is independent from
-                soil sensor readings.
-            </p>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         LIVE GRAPH
-    ====================================================== -->
-
-    <section class="chart-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    TREND ANALYSIS
-                </span>
-
-                <h2>
-                    Live Soil Trends
-                </h2>
-
-                <p>
-                    Recent changes in monitored soil parameters.
-                </p>
-
-            </div>
-
-            <span class="live-badge">
-                <span class="live-dot"></span>
-                LIVE
-            </span>
-
-        </div>
-
-
-        <div class="chart-controls">
-
-            <button
-                class="chart-button active"
-                data-parameter="moisture"
-            >
-                Moisture
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="temperature"
-            >
-                Temperature
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="ph"
-            >
-                pH
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="ec"
-            >
-                EC
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="nitrogen"
-            >
-                Nitrogen
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="phosphorus"
-            >
-                Phosphorus
-            </button>
-
-            <button
-                class="chart-button"
-                data-parameter="potassium"
-            >
-                Potassium
-            </button>
-
-        </div>
-
-
-        <div class="chart-container">
-
-            <canvas id="soilChart"></canvas>
-
-        </div>
-
-        <p class="chart-note">
-            Automatically updated every 10 seconds.
-        </p>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         WEATHER FORECAST
-    ====================================================== -->
-
-    <section class="forecast-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    WEATHER OUTLOOK
-                </span>
-
-                <h2>
-                    3-Day Forecast
-                </h2>
-
-                <p>
-                    Forecast conditions for the
-                    testing-site location.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div
-            id="forecast"
-            class="forecast-grid"
-        >
-            Loading forecast...
-        </div>
-
-    </section>
-
-
-
-    <!-- =====================================================
-         SOIL HISTORY
-    ====================================================== -->
-
-    <section
-        id="soilHistorySection"
-        class="history-section"
-    >
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    HISTORICAL ANALYSIS
-                </span>
-
-                <h2>
-                    Soil History
-                </h2>
-
-                <p>
-                    Search and review recorded soil conditions
-                    by date.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="history-search">
-
-            <div class="date-field">
-
-                <label for="historyDate">
-                    Select Date
-                </label>
-
-                <input
-                    type="date"
-                    id="historyDate"
-                >
-
-            </div>
-
-
-            <button
-                id="searchHistoryButton"
-                type="button"
-            >
-                Search Records
-            </button>
-
-        </div>
-
-
-        <div
-            id="historyStatus"
-            class="history-status"
-        >
-            Select a date to view soil history.
-        </div>
-
-
-        <div
-            id="dailySummary"
-            class="history-summary"
-        >
-
-            <span class="section-label">
-                DAILY SUMMARY
-            </span>
-
-            <h3>
-                Field Reading Summary
-            </h3>
-
-            <p id="dailySummaryText">
-                No date selected.
-            </p>
-
-        </div>
-
-
-        <div class="parameter-summary">
-
-            <div class="subsection-title">
-                Parameter Summary
-            </div>
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Minimum</th>
-                            <th>Maximum</th>
-                            <th>Average</th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="parameterSummaryBody">
-
-                        <tr>
-                            <td colspan="4">
-                                No data available.
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-
-        <div class="reading-history">
-
-            <div class="subsection-title">
-                Reading History
-            </div>
-
-            <div class="table-container">
-
-                <table>
-
-                    <thead>
-
-                        <tr>
-                            <th>Time</th>
-                            <th>Moisture</th>
-                            <th>Temperature</th>
-                            <th>pH</th>
-                            <th>EC</th>
-                            <th>N</th>
-                            <th>P</th>
-                            <th>K</th>
-                        </tr>
-
-                    </thead>
-
-                    <tbody id="historyTableBody">
-
-                        <tr>
-                            <td colspan="8">
-                                No readings available.
-                            </td>
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-</main>
-
-
-
-<!-- =========================================================
-     FOOTER
-========================================================= -->
-
-<footer>
-
-    <div class="footer-inner">
-
-        <div>
-
-            <strong>
-                SOLUMUS-V
-            </strong>
-
-            <p>
-                Geo-Neural Soil Monitoring &
-                Recommendation System
-            </p>
-
-        </div>
-
-        <div class="footer-meta">
-
-            <span>
-                Research Prototype
-            </span>
-
-            <span>
-                •
-            </span>
-
-            <span>
-                2026
-            </span>
-
-        </div>
-
-    </div>
-
-</footer>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+            `;
+        }
+    }
+
+    function weatherCodeLabel(code) {
+        const labels = {
+            0: "Clear sky",
+            1: "Mainly clear",
+            2: "Partly cloudy",
+            3: "Overcast",
+            45: "Fog",
+            48: "Depositing rime fog",
+            51: "Light drizzle",
+            53: "Moderate drizzle",
+            55: "Dense drizzle",
+            56: "Light freezing drizzle",
+            57: "Dense freezing drizzle",
+            61: "Slight rain",
+            63: "Moderate rain",
+            65: "Heavy rain",
+            66: "Light freezing rain",
+            67: "Heavy freezing rain",
+            71: "Slight snow",
+            73: "Moderate snow",
+            75: "Heavy snow",
+            77: "Snow grains",
+            80: "Slight rain showers",
+            81: "Moderate rain showers",
+            82: "Violent rain showers",
+            85: "Slight snow showers",
+            86: "Heavy snow showers",
+            95: "Thunderstorm",
+            96: "Thunderstorm with hail",
+            99: "Thunderstorm with heavy hail"
+        };
+
+        return labels[code] || "Unknown condition";
+    }
+
+    function renderWeather(data) {
+        const current = data.current || {};
+        const daily = data.daily || {};
+        const risk = data.weatherRisk || {};
+
+        $("weatherLocation").textContent =
+            `Lat ${number(data.location?.latitude, 0).toFixed(5)}, ` +
+            `Lon ${number(data.location?.longitude, 0).toFixed(5)}`;
+
+        $("weatherCondition").textContent =
+            firstValue(
+                current.condition,
+                weatherCodeLabel(current.weather_code),
+                "Unknown"
+            );
+
+        $("weatherTemperature").textContent =
+            `${formatValue(current.temperature_2m, 1)} °C`;
+
+        $("weatherHumidity").textContent =
+            `${formatValue(current.relative_humidity_2m, 0)} %`;
+
+        $("weatherRain").textContent =
+            `${formatValue(current.precipitation, 1)} mm`;
+
+        $("weatherWind").textContent =
+            `${formatValue(current.wind_speed_10m, 1)} km/h`;
+
+        $("weatherRisk").textContent =
+            String(
+                firstValue(
+                    risk.overall,
+                    "LOW"
+                )
+            );
+
+        const riskMessages =
+            Array.isArray(risk.risks)
+                ? risk.risks
+                    .map(item => item.message)
+                    .filter(Boolean)
+                    .join(" ")
+                : "";
+
+        $("weatherRiskMessage").textContent =
+            riskMessages ||
+            "No significant weather risks detected.";
+
+        renderForecast(daily);
+    }
+
+    function renderForecast(daily) {
+        const dates = daily.time || [];
+        const codes = daily.weather_code || [];
+        const highs = daily.temperature_2m_max || [];
+        const lows = daily.temperature_2m_min || [];
+        const rainChance =
+            daily.precipitation_probability_max || [];
+        const rainfall =
+            daily.precipitation_sum || [];
+
+        if (!dates.length) {
+            $("forecastContainer").innerHTML = `
+                <div class="forecast-card">
+                    Forecast unavailable.
+                </div>
+            `;
+            return;
+        }
+
+        $("forecastContainer").innerHTML =
+            dates.map((date, i) => {
+                const dateLabel =
+                    new Date(
+                        `${date}T00:00:00`
+                    ).toLocaleDateString(
+                        [],
+                        {
+                            weekday: "long",
+                            month: "short",
+                            day: "numeric"
+                        }
+                    );
+
+                return `
+                    <div class="forecast-card">
+                        <div class="forecast-date">
+                            ${escapeHTML(dateLabel)}
+                        </div>
+
+                        <div class="forecast-info">
+                            ${escapeHTML(
+                                weatherCodeLabel(codes[i])
+                            )}
+                            <br>
+                            Temperature:
+                            ${formatValue(lows[i], 1)}
+                            –
+                            ${formatValue(highs[i], 1)}
+                            °C
+                            <br>
+                            Rain chance:
+                            ${formatValue(rainChance[i], 0)}%
+                            <br>
+                            Expected rain:
+                            ${formatValue(rainfall[i], 1)} mm
+                        </div>
+                    </div>
+                `;
+            }).join("");
+    }
+
+    function openWeatherSidebar() {
+        $("weatherSidebar").classList.add("open");
+        $("weatherSidebar").setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        if (currentLocation) {
+            loadWeather(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+        }
+    }
+
+    function closeWeatherSidebar() {
+        $("weatherSidebar").classList.remove("open");
+        $("weatherSidebar").setAttribute(
+            "aria-hidden",
+            "true"
+        );
+    }
+
+    /* =========================================================
+       EVENT HANDLERS
+    ========================================================= */
+
+    $("locateButton").addEventListener(
+        "click",
+        locateMe
+    );
+
+    $("addNodeButton").addEventListener(
+        "click",
+        openLocationModal
+    );
+
+    $("captureLocationButton").addEventListener(
+        "click",
+        captureCurrentLocation
+    );
+
+    $("saveNodeButton").addEventListener(
+        "click",
+        saveNodeLocation
+    );
+
+    $("locationModalClose").addEventListener(
+        "click",
+        closeLocationModal
+    );
+
+    $("nodeModalClose").addEventListener(
+        "click",
+        closeNodeModal
+    );
+
+    $("weatherTab").addEventListener(
+        "click",
+        openWeatherSidebar
+    );
+
+    $("weatherClose").addEventListener(
+        "click",
+        closeWeatherSidebar
+    );
+
+    $("locationModal").addEventListener(
+        "click",
+        event => {
+            if (event.target === $("locationModal")) {
+                closeLocationModal();
+            }
+        }
+    );
+
+    $("nodeModal").addEventListener(
+        "click",
+        event => {
+            if (event.target === $("nodeModal")) {
+                closeNodeModal();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (event.key === "Escape") {
+                closeLocationModal();
+                closeNodeModal();
+                closeWeatherSidebar();
+            }
+        }
+    );
+
+    /* =========================================================
+       START
+    ========================================================= */
+
+    initializeMap();
+
+    loadSoilData();
+
+    if (currentLocation) {
+        loadWeather(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+    }
+
+    setInterval(
+        loadSoilData,
+        10000
+    );
+
+    setInterval(
+        () => {
+            if (currentLocation) {
+                loadWeather(
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                );
+            }
+        },
+        10 * 60 * 1000
+    );
 </script>
-
-<script src="js/dashboard.js"></script>
 
 </body>
 </html>

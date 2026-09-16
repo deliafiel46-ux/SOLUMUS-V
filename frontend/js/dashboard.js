@@ -1,4 +1,686 @@
 const API_URL = "https://solumus-v.onrender.com";
+// ==============================
+// =========================================================
+// SOLUMUS-V GEO-NEURAL FIELD MAP
+// =========================================================
+
+let solumusMap = null;
+let sensorNodeMarker = null;
+let sensorCoverageCircle = null;
+
+
+// =========================================================
+// SENSOR NODE CONFIGURATION
+// =========================================================
+
+const SENSOR_NODE = {
+    id: "SN-001",
+    name: "SOLUMUS-V Sensor Node 01",
+
+    // Current testing coordinates
+    // Replace these with the ACTUAL sensor deployment coordinates.
+    latitude: 10.3157,
+    longitude: 123.8854,
+
+    // Visualization of the sensor monitoring area.
+    // This is NOT yet a scientifically established sensor range.
+    radius: 5
+};
+
+
+// =========================================================
+// INITIALIZE MAP
+// =========================================================
+
+function initializeSolumusMap() {
+
+    const mapContainer =
+        document.getElementById("solumusMap");
+
+    if (!mapContainer) {
+        console.error(
+            "SOLUMUS-V map container not found."
+        );
+        return;
+    }
+
+    solumusMap = L.map("solumusMap").setView(
+        [
+            SENSOR_NODE.latitude,
+            SENSOR_NODE.longitude
+        ],
+        19
+    );
+
+
+    // OpenStreetMap
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 22,
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(solumusMap);
+
+
+    createSensorNode();
+
+
+    // Fix Leaflet rendering when map is inside
+    // a dynamically sized layout.
+    setTimeout(() => {
+
+        if (solumusMap) {
+            solumusMap.invalidateSize();
+        }
+
+    }, 300);
+}
+
+
+// =========================================================
+// CREATE SENSOR NODE
+// =========================================================
+
+function createSensorNode() {
+
+    if (!solumusMap) {
+        return;
+    }
+
+    const position = [
+        SENSOR_NODE.latitude,
+        SENSOR_NODE.longitude
+    ];
+
+
+    // -----------------------------------------------------
+    // SENSOR NODE MARKER
+    // -----------------------------------------------------
+
+    sensorNodeMarker =
+        L.circleMarker(
+            position,
+            {
+                radius: 8,
+                weight: 3,
+                color: "#ffffff",
+                fillColor: "#38a169",
+                fillOpacity: 1
+            }
+        ).addTo(solumusMap);
+
+
+    sensorNodeMarker.bindTooltip(
+        SENSOR_NODE.name,
+        {
+            direction: "top",
+            offset: [0, -8]
+        }
+    );
+
+
+    // -----------------------------------------------------
+    // SENSOR MONITORING RANGE
+    // -----------------------------------------------------
+
+    sensorCoverageCircle =
+        L.circle(
+            position,
+            {
+                radius: SENSOR_NODE.radius,
+                color: "#38a169",
+                weight: 2,
+                fillColor: "#38a169",
+                fillOpacity: 0.18
+            }
+        ).addTo(solumusMap);
+
+
+    // -----------------------------------------------------
+    // NODE CLICK
+    // -----------------------------------------------------
+
+    sensorNodeMarker.on(
+        "click",
+        (event) => {
+
+            openSensorNodeModal(
+                SENSOR_NODE,
+                event.latlng
+            );
+
+        }
+    );
+
+
+    // -----------------------------------------------------
+    // MONITORING AREA CLICK
+    // -----------------------------------------------------
+
+    sensorCoverageCircle.on(
+        "click",
+        (event) => {
+
+            openSensorNodeModal(
+                SENSOR_NODE,
+                event.latlng
+            );
+
+        }
+    );
+}
+
+
+// =========================================================
+// GET MAP HEALTH STATUS
+// =========================================================
+
+function getMapHealthStatus(level) {
+
+    if (!level) {
+
+        return {
+            label: "No Sensor Data",
+            color: "#718096"
+        };
+
+    }
+
+
+    const normalized =
+        String(level)
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        normalized.includes("good") ||
+        normalized.includes("healthy")
+    ) {
+
+        return {
+            label: "Good",
+            color: "#38a169"
+        };
+
+    }
+
+
+    if (
+        normalized.includes("attention") ||
+        normalized.includes("need")
+    ) {
+
+        return {
+            label: "Need Attention",
+            color: "#d69e2e"
+        };
+
+    }
+
+
+    if (
+        normalized.includes("critical") ||
+        normalized.includes("poor")
+    ) {
+
+        return {
+            label: "Critical",
+            color: "#e53e3e"
+        };
+
+    }
+
+
+    return {
+        label: "No Sensor Data",
+        color: "#718096"
+    };
+}
+
+
+// =========================================================
+// UPDATE SENSOR NODE APPEARANCE
+// =========================================================
+
+function updateSensorNodeMap() {
+
+    if (
+        !solumusMap ||
+        !sensorNodeMarker ||
+        !sensorCoverageCircle
+    ) {
+        return;
+    }
+
+
+    const healthLevel =
+        document
+            .getElementById("soilHealthLevel")
+            ?.textContent
+            ?.trim()
+        || "";
+
+
+    const status =
+        getMapHealthStatus(healthLevel);
+
+
+    // Update sensor marker
+    sensorNodeMarker.setStyle({
+
+        color: "#ffffff",
+        fillColor: status.color,
+        fillOpacity: 1,
+        weight: 3
+
+    });
+
+
+    // Update monitoring zone
+    sensorCoverageCircle.setStyle({
+
+        color: status.color,
+        fillColor: status.color,
+        fillOpacity: 0.18,
+        weight: 2
+
+    });
+}
+
+
+// =========================================================
+// OPEN SENSOR NODE MODAL
+// =========================================================
+
+function openSensorNodeModal(
+    node,
+    latlng
+) {
+
+    const modal =
+        document.getElementById(
+            "soilNodeModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    // -----------------------------------------------------
+    // POSITION MODAL BESIDE SENSOR
+    // -----------------------------------------------------
+
+    if (
+        latlng &&
+        solumusMap
+    ) {
+
+        const point =
+            solumusMap
+                .latLngToContainerPoint(
+                    latlng
+                );
+
+
+        const mapRect =
+            solumusMap
+                .getContainer()
+                .getBoundingClientRect();
+
+
+        const modalWidth = 390;
+        const spacing = 16;
+
+
+        let left =
+            mapRect.left +
+            point.x +
+            spacing;
+
+
+        let top =
+            mapRect.top +
+            point.y -
+            120;
+
+
+        // If there is not enough room
+        // on the right, place it on the left.
+        if (
+            left + modalWidth >
+            window.innerWidth - 15
+        ) {
+
+            left =
+                mapRect.left +
+                point.x -
+                modalWidth -
+                spacing;
+
+        }
+
+
+        // Prevent modal from going
+        // above the viewport.
+        if (top < 15) {
+            top = 15;
+        }
+
+
+        // Prevent modal from going
+        // below the viewport.
+        const estimatedHeight = 500;
+
+        if (
+            top + estimatedHeight >
+            window.innerHeight - 15
+        ) {
+
+            top =
+                window.innerHeight -
+                estimatedHeight -
+                15;
+
+        }
+
+
+        modal.style.left =
+            `${left}px`;
+
+        modal.style.top =
+            `${top}px`;
+    }
+
+
+    // -----------------------------------------------------
+    // NODE NAME
+    // -----------------------------------------------------
+
+    const nodeName =
+        document.getElementById(
+            "modalNodeName"
+        );
+
+    if (nodeName) {
+
+        nodeName.textContent =
+            node.name;
+
+    }
+
+
+    // -----------------------------------------------------
+    // HEALTH TIER
+    // -----------------------------------------------------
+
+    const healthLevel =
+        document
+            .getElementById(
+                "soilHealthLevel"
+            )
+            ?.textContent
+            ?.trim()
+        || "No Sensor Data";
+
+
+    const healthStatus =
+        getMapHealthStatus(
+            healthLevel
+        );
+
+
+    const modalHealth =
+        document.getElementById(
+            "modalHealthTier"
+        );
+
+    if (modalHealth) {
+
+        modalHealth.textContent =
+            healthStatus.label;
+
+        modalHealth.style.color =
+            healthStatus.color;
+
+    }
+
+
+    // -----------------------------------------------------
+    // SOIL PARAMETERS
+    // -----------------------------------------------------
+
+    const parameterMap = {
+
+        modalMoisture:
+            "moisture",
+
+        modalPh:
+            "ph",
+
+        modalTemperature:
+            "soilTemperature",
+
+        modalEc:
+            "ec",
+
+        modalNitrogen:
+            "nitrogen",
+
+        modalPhosphorus:
+            "phosphorus",
+
+        modalPotassium:
+            "potassium"
+
+    };
+
+
+    Object.entries(
+        parameterMap
+    ).forEach(
+        (
+            [
+                modalId,
+                sourceId
+            ]
+        ) => {
+
+            const modalElement =
+                document.getElementById(
+                    modalId
+                );
+
+            const sourceElement =
+                document.getElementById(
+                    sourceId
+                );
+
+
+            if (
+                modalElement &&
+                sourceElement
+            ) {
+
+                modalElement.textContent =
+                    sourceElement.textContent
+                    || "--";
+
+            }
+
+        }
+    );
+
+
+    // -----------------------------------------------------
+    // RECOMMENDATION
+    // -----------------------------------------------------
+
+    const recommendationList =
+        document.getElementById(
+            "recommendationList"
+        );
+
+
+    const modalRecommendation =
+        document.getElementById(
+            "modalRecommendation"
+        );
+
+
+    if (
+        recommendationList &&
+        modalRecommendation
+    ) {
+
+        const recommendations =
+            Array.from(
+                recommendationList
+                    .querySelectorAll("li")
+            )
+            .map(
+                item =>
+                    item.textContent.trim()
+            )
+            .filter(
+                text =>
+                    text.length > 0
+            );
+
+
+        modalRecommendation.textContent =
+            recommendations.length > 0
+                ? recommendations.join(" ")
+                : "No recommendation available.";
+    }
+
+
+    // -----------------------------------------------------
+    // SHOW MODAL
+    // -----------------------------------------------------
+
+    modal.classList.add(
+        "active"
+    );
+}
+
+
+// =========================================================
+// CLOSE SENSOR NODE MODAL
+// =========================================================
+
+function closeSensorNodeModal() {
+
+    const modal =
+        document.getElementById(
+            "soilNodeModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "active"
+    );
+}
+
+
+// =========================================================
+// INITIALIZE GEO-NEURAL MAP
+// =========================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        initializeSolumusMap();
+
+
+        // Close button
+        const closeButton =
+            document.getElementById(
+                "closeSoilModal"
+            );
+
+
+        if (closeButton) {
+
+            closeButton.addEventListener(
+                "click",
+                closeSensorNodeModal
+            );
+
+        }
+
+
+        // Close when clicking outside
+        const modal =
+            document.getElementById(
+                "soilNodeModal"
+            );
+
+
+        if (modal) {
+
+            modal.addEventListener(
+                "click",
+                (event) => {
+
+                    if (
+                        event.target === modal
+                    ) {
+
+                        closeSensorNodeModal();
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+);
+// ==============================
+// MODAL EVENTS
+// ==============================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    initializeSolumusMap();
+
+    const closeButton =
+        document.getElementById("closeSoilModal");
+
+    if (closeButton) {
+        closeButton.addEventListener(
+            "click",
+            closeSensorNodeModal
+        );
+    }
+
+    const modal =
+        document.getElementById("soilNodeModal");
+
+    if (modal) {
+
+        modal.addEventListener("click", (event) => {
+
+            if (event.target === modal) {
+                closeSensorNodeModal();
+            }
+
+        });
+    }
+
+});
 
 
 // ==============================
@@ -70,6 +752,7 @@ recommendations.forEach(recommendation => {
 });
 
         console.log("Soil data loaded:", soil);
+        updateSensorNodeMap();
 
     } catch (error) {
         console.error("Soil data error:", error);
