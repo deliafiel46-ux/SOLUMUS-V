@@ -8,8 +8,19 @@ const { getDatabase } = require("firebase-admin/database");
 const app = express();
 const PORT = process.env.PORT || 3000;
 // Firebase service account
-const serviceAccount = require("./solumus-v-7ea04-firebase-adminsdk-fbsvc-23816a022d.json");
+const fs = require("fs");
+const path = require("path");
 
+const serviceAccountPath =
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH ||
+    path.join(
+        __dirname,
+        "solumus-v-7ea04-firebase-adminsdk-fbsvc-23816a022d.json"
+    );
+
+const serviceAccount = JSON.parse(
+    fs.readFileSync(serviceAccountPath, "utf8")
+);
 // Initialize Firebase
 initializeApp({
     credential: cert(serviceAccount),
