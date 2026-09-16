@@ -2872,3 +2872,16 @@ p {
             #667970;
     }
 }
+/* SOLUMUS-V Soil Monitoring Map */
+#soilMap {
+    width: 100%;
+    height: 500px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.map-section {
+    width: 100%;
+    margin-bottom: 30px;
+}
