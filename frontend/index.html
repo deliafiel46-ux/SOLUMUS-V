@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="SOLUMUS-V Geo-Neural Soil Monitoring and Recommendation System"
+    >
+
+   <title>SOLUMUS-V WEBSITE</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <div class="brand">
+
+            <div class="brand-mark">
+                SV
+            </div>
+
+            <div class="brand-text">
+                <span class="brand-eyebrow">
+                    SMART AGRICULTURE
+                </span>
+
+                <h1>SOLUMUS-V</h1>
+
+                <p>
+                    Geo-Neural Soil Monitoring &amp;
+                    Recommendation System
+                </p>
+            </div>
+
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+
+            <div>
+                <strong>System Online</strong>
+                <small>Dashboard active</small>
+            </div>
+        </div>
+
+    </div>
+
+
+    <nav class="main-nav">
+
+        <div class="nav-inner">
+
+            <a href="#soilHealthSection" class="active">
+                Overview
+            </a>
+
+            <a href="#soilMonitoringSection">
+                Monitoring
+            </a>
+
+            <a href="#recommendationSection">
+                Recommendations
+            </a>
+
+            <a href="#weatherRiskSection">
+                Weather
+            </a>
+
+            <a href="#soilHistorySection">
+                History
+            </a>
+
+        </div>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main class="dashboard">
+
+
+    <!-- PAGE INTRO -->
+
+    <section class="page-intro">
+
+        <div>
+
+            <span class="eyebrow">
+                FIELD MONITORING DASHBOARD
+            </span>
+
+            <h2>
+                Soil Intelligence Overview
+            </h2>
+
+            <p>
+                Real-time assessment of soil conditions,
+                environmental factors, and field recommendations.
+            </p>
+
+        </div>
+
+        <div class="live-indicator">
+            <span class="status-dot"></span>
+            Live data
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         SOIL HEALTH
+    ====================================================== -->
+
+    <section
+        id="soilHealthSection"
+        class="health-section"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    PRIMARY ASSESSMENT
+                </span>
+
+                <h2>
+                    Overall Soil Health
+                </h2>
+
+                <p>
+                    Composite assessment based on monitored
+                    soil parameters.
+                </p>
+
+            </div>
+
+            <span class="section-number">
+                01
+            </span>
+
+        </div>
+
+
+        <div class="health-dashboard">
+
+
+            <!-- SCORE -->
+
+            <div class="health-score-area">
+
+                <span class="metric-label">
+                    SOIL HEALTH SCORE
+                </span>
+
+                <div class="health-score">
+                    <span id="soilHealthScore">
+                        --
+                    </span>
+                </div>
+
+                <div class="health-progress">
+                    <div
+                        id="soilHealthProgress"
+                        class="health-progress-fill"
+                    ></div>
+                </div>
+
+                <span class="health-caption">
+                    Composite soil assessment
+                </span>
+
+            </div>
+
+
+            <!-- STATUS -->
+
+            <div class="health-status-area">
+
+                <span class="metric-label">
+                    CURRENT CONDITION
+                </span>
+
+                <div
+                    id="soilHealthLevel"
+                    class="health-status-badge"
+                >
+                    --
+                </div>
+
+                <p id="soilHealthMessage">
+                    Waiting for soil health analysis...
+                </p>
+
+            </div>
+
+
+            <!-- SUMMARY -->
+
+            <div class="health-summary">
+
+                <div class="summary-stat">
+
+                    <strong id="monitoredParameterCount">
+                        7
+                    </strong>
+
+                    <span>
+                        Parameters monitored
+                    </span>
+
+                </div>
+
+
+                <div class="summary-stat">
+
+                    <strong id="soilAlertCount">
+                        0
+                    </strong>
+
+                    <span>
+                        Requiring attention
+                    </span>
+
+                </div>
+
+
+                <div class="summary-stat">
+
+                    <strong id="soilUpdateStatus">
+                        LIVE
+                    </strong>
+
+                    <span>
+                        Monitoring status
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         SOIL MONITORING
+    ====================================================== -->
+
+    <section
+        id="soilMonitoringSection"
+        class="monitoring-section"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    SENSOR INTELLIGENCE
+                </span>
+
+                <h2>
+                    Live Soil Monitoring
+                </h2>
+
+                <p>
+                    Current measurements from the SOLUMUS-V
+                    multi-parameter soil sensor.
+                </p>
+
+            </div>
+
+            <span class="live-badge">
+                <span class="live-dot"></span>
+                LIVE
+            </span>
+
+        </div>
+
+
+
+        <!-- =================================================
+             SENSOR CARDS
+        ================================================== -->
+
+        <div class="sensor-grid">
+
+
+            <!-- MOISTURE -->
+
+            <article class="sensor-card moisture-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL WATER
+                        </span>
+
+                        <h3>
+                            Moisture
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        M
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="moisture">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Volumetric moisture (%)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Indicates the amount of water currently
+                    present in the soil.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- TEMPERATURE -->
+
+            <article class="sensor-card temperature-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL CONDITION
+                        </span>
+
+                        <h3>
+                            Temperature
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        T
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="soilTemperature">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Soil temperature (°C)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Represents the current temperature of the
+                    monitored soil.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- PH -->
+
+            <article class="sensor-card ph-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL CHEMISTRY
+                        </span>
+
+                        <h3>
+                            pH Level
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        pH
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="ph">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    pH scale
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Indicates whether the soil condition is
+                    acidic, neutral, or alkaline.
+                </p>
+
+                <div class="ph-scale">
+
+                    <span>Acidic</span>
+
+                    <div class="ph-track">
+                        <span></span>
+                    </div>
+
+                    <span>Alkaline</span>
+
+                </div>
+
+            </article>
+
+
+
+            <!-- EC -->
+
+            <article class="sensor-card ec-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL CHEMISTRY
+                        </span>
+
+                        <h3>
+                            Electrical Conductivity
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        EC
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="ec">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Soil conductivity (mS/cm)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Indicates the electrical conductivity of
+                    the soil, related to dissolved salts.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- NITROGEN -->
+
+            <article class="sensor-card nitrogen-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL NUTRIENT
+                        </span>
+
+                        <h3>
+                            Nitrogen
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        N
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="nitrogen">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Available nitrogen (mg/kg)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Measures available nitrogen in the
+                    monitored soil.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- PHOSPHORUS -->
+
+            <article class="sensor-card phosphorus-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL NUTRIENT
+                        </span>
+
+                        <h3>
+                            Phosphorus
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        P
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="phosphorus">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Available phosphorus (mg/kg)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Measures available phosphorus supporting
+                    plant growth and development.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- POTASSIUM -->
+
+            <article class="sensor-card potassium-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SOIL NUTRIENT
+                        </span>
+
+                        <h3>
+                            Potassium
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        K
+                    </span>
+
+                </div>
+
+                <div class="sensor-value">
+                    <span id="potassium">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Available potassium (mg/kg)
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Monitoring</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Measures available potassium in the
+                    monitored soil.
+                </p>
+
+                <div class="sensor-line">
+                    <span></span>
+                </div>
+
+            </article>
+
+
+
+            <!-- LAST UPDATE -->
+
+            <article class="sensor-card update-card">
+
+                <div class="sensor-top">
+
+                    <div>
+                        <span class="sensor-category">
+                            SYSTEM
+                        </span>
+
+                        <h3>
+                            Last Update
+                        </h3>
+                    </div>
+
+                    <span class="sensor-code">
+                        SYNC
+                    </span>
+
+                </div>
+
+                <div class="sensor-value update-value">
+                    <span id="lastUpdate">--</span>
+                </div>
+
+                <span class="sensor-unit">
+                    Latest sensor synchronization
+                </span>
+
+                <div class="sensor-status">
+                    <span class="status-dot"></span>
+                    <strong>Live connection</strong>
+                </div>
+
+                <p class="sensor-description">
+                    Displays the latest time the dashboard
+                    received sensor information.
+                </p>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         DECISION SUPPORT
+    ====================================================== -->
+
+    <section class="decision-grid">
+
+
+        <!-- SOIL RECOMMENDATIONS -->
+
+        <section
+            id="recommendationSection"
+            class="decision-card recommendation-card"
+        >
+
+            <div class="section-heading compact">
+
+                <div>
+
+                    <span class="section-label">
+                        DECISION SUPPORT
+                    </span>
+
+                    <h2>
+                        Soil Recommendations
+                    </h2>
+
+                    <p>
+                        Suggested actions based on current
+                        soil sensor readings.
+                    </p>
+
+                </div>
+
+                <span class="decision-icon">
+                    →
+                </span>
+
+            </div>
+
+
+            <div class="recommendation-content">
+
+                <ul id="recommendationList">
+
+                    <li>
+                        Waiting for soil analysis...
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- WEATHER RISK -->
+
+        <section
+            id="weatherRiskSection"
+            class="decision-card weather-risk-card"
+        >
+
+            <div class="section-heading compact">
+
+                <div>
+
+                    <span class="section-label">
+                        ENVIRONMENTAL INTELLIGENCE
+                    </span>
+
+                    <h2>
+                        Weather Risk
+                    </h2>
+
+                    <p>
+                        Independent assessment based on
+                        current weather conditions.
+                    </p>
+
+                </div>
+
+                <span class="weather-badge">
+                    WEATHER
+                </span>
+
+            </div>
+
+
+            <div class="weather-risk-content">
+
+                <span class="metric-label">
+                    CURRENT WEATHER RISK
+                </span>
+
+                <div
+                    id="weatherRisk"
+                    class="risk-value"
+                >
+                    --
+                </div>
+
+                <p id="weatherRiskMessage">
+                    Waiting for weather analysis...
+                </p>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         CURRENT WEATHER
+    ====================================================== -->
+
+    <section class="weather-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    ENVIRONMENTAL DATA
+                </span>
+
+                <h2>
+                    Current Weather
+                </h2>
+
+                <p>
+                    Weather conditions at the testing-site
+                    location.
+                </p>
+
+            </div>
+
+            <span class="weather-badge">
+                WEATHER
+            </span>
+
+        </div>
+
+
+        <div class="weather-main">
+
+            <div class="weather-condition">
+
+                <span class="metric-label">
+                    CURRENT CONDITION
+                </span>
+
+                <strong id="weatherCondition">
+                    Loading...
+                </strong>
+
+            </div>
+
+
+            <div class="weather-temperature">
+
+                <span id="weatherTemperature">
+                    -- °C
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="weather-details">
+
+
+            <div class="weather-stat">
+
+                <span>
+                    HUMIDITY
+                </span>
+
+                <strong id="humidity">
+                    -- %
+                </strong>
+
+            </div>
+
+
+            <div class="weather-stat">
+
+                <span>
+                    RAINFALL
+                </span>
+
+                <strong id="rainfall">
+                    -- mm
+                </strong>
+
+            </div>
+
+
+            <div class="weather-stat">
+
+                <span>
+                    WIND SPEED
+                </span>
+
+                <strong id="windSpeed">
+                    -- km/h
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="weather-note">
+
+            <span>i</span>
+
+            <p>
+                Weather assessment is independent from
+                soil sensor readings.
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         LIVE GRAPH
+    ====================================================== -->
+
+    <section class="chart-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    TREND ANALYSIS
+                </span>
+
+                <h2>
+                    Live Soil Trends
+                </h2>
+
+                <p>
+                    Recent changes in monitored soil parameters.
+                </p>
+
+            </div>
+
+            <span class="live-badge">
+                <span class="live-dot"></span>
+                LIVE
+            </span>
+
+        </div>
+
+
+        <div class="chart-controls">
+
+            <button
+                class="chart-button active"
+                data-parameter="moisture"
+            >
+                Moisture
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="temperature"
+            >
+                Temperature
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="ph"
+            >
+                pH
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="ec"
+            >
+                EC
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="nitrogen"
+            >
+                Nitrogen
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="phosphorus"
+            >
+                Phosphorus
+            </button>
+
+            <button
+                class="chart-button"
+                data-parameter="potassium"
+            >
+                Potassium
+            </button>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas id="soilChart"></canvas>
+
+        </div>
+
+        <p class="chart-note">
+            Automatically updated every 10 seconds.
+        </p>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         WEATHER FORECAST
+    ====================================================== -->
+
+    <section class="forecast-section">
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    WEATHER OUTLOOK
+                </span>
+
+                <h2>
+                    3-Day Forecast
+                </h2>
+
+                <p>
+                    Forecast conditions for the
+                    testing-site location.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="forecast"
+            class="forecast-grid"
+        >
+            Loading forecast...
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         SOIL HISTORY
+    ====================================================== -->
+
+    <section
+        id="soilHistorySection"
+        class="history-section"
+    >
+
+        <div class="section-heading">
+
+            <div>
+
+                <span class="section-label">
+                    HISTORICAL ANALYSIS
+                </span>
+
+                <h2>
+                    Soil History
+                </h2>
+
+                <p>
+                    Search and review recorded soil conditions
+                    by date.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="history-search">
+
+            <div class="date-field">
+
+                <label for="historyDate">
+                    Select Date
+                </label>
+
+                <input
+                    type="date"
+                    id="historyDate"
+                >
+
+            </div>
+
+
+            <button
+                id="searchHistoryButton"
+                type="button"
+            >
+                Search Records
+            </button>
+
+        </div>
+
+
+        <div
+            id="historyStatus"
+            class="history-status"
+        >
+            Select a date to view soil history.
+        </div>
+
+
+        <div
+            id="dailySummary"
+            class="history-summary"
+        >
+
+            <span class="section-label">
+                DAILY SUMMARY
+            </span>
+
+            <h3>
+                Field Reading Summary
+            </h3>
+
+            <p id="dailySummaryText">
+                No date selected.
+            </p>
+
+        </div>
+
+
+        <div class="parameter-summary">
+
+            <div class="subsection-title">
+                Parameter Summary
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Minimum</th>
+                            <th>Maximum</th>
+                            <th>Average</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="parameterSummaryBody">
+
+                        <tr>
+                            <td colspan="4">
+                                No data available.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="reading-history">
+
+            <div class="subsection-title">
+                Reading History
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Time</th>
+                            <th>Moisture</th>
+                            <th>Temperature</th>
+                            <th>pH</th>
+                            <th>EC</th>
+                            <th>N</th>
+                            <th>P</th>
+                            <th>K</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historyTableBody">
+
+                        <tr>
+                            <td colspan="8">
+                                No readings available.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer>
+
+    <div class="footer-inner">
+
+        <div>
+
+            <strong>
+                SOLUMUS-V
+            </strong>
+
+            <p>
+                Geo-Neural Soil Monitoring &
+                Recommendation System
+            </p>
+
+        </div>
+
+        <div class="footer-meta">
+
+            <span>
+                Research Prototype
+            </span>
+
+            <span>
+                •
+            </span>
+
+            <span>
+                2026
+            </span>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>
