@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000";
+const API_URL = "https://solumus-v.onrender.com";
 
 
 // ==============================
@@ -79,7 +79,7 @@ recommendations.forEach(recommendation => {
 // SOIL HISTORY
 // ==============================
 
-async function loadSoilHistory() {
+async function loadSoilHistoryByDate()  {
     const date = document.getElementById("historyDate").value;
 
     if (!date) {
@@ -207,7 +207,7 @@ async function loadSoilHistory() {
 // Search button
 document
     .getElementById("searchHistoryButton")
-    .addEventListener("click", loadSoilHistory);
+    .addEventListener("click", loadSoilHistoryByDate);
 
 // ==============================
 // WEATHER DATA
@@ -382,7 +382,7 @@ let soilChart = null;
 let recentSoilData = [];
 let selectedParameter = "moisture";
 
-async function loadSoilHistory() {
+async function loadRecentSoilHistory() {
     try {
         const response = await fetch(
             `${API_URL}/api/soil-history/recent`
@@ -400,7 +400,7 @@ async function loadSoilHistory() {
             throw new Error(result.message);
         }
 
-recentSoilData = result.readings || [];
+        recentSoilData = result.readings || [];
 
         updateSoilChart();
 
@@ -602,8 +602,8 @@ document
 // INITIAL GRAPH LOAD
 // ==============================
 
-loadSoilHistory();
+loadRecentSoilHistory();
 
 
 // Refresh graph every 10 seconds
-setInterval(loadSoilHistory, 10000);
+setInterval(loadRecentSoilHistory, 10000);
