@@ -149,8 +149,9 @@
                 </h2>
 
                 <p>
-                    Composite assessment based on monitored
-                    soil parameters.
+                   <p>
+    A quick look at the current condition of your monitored soil.
+</p>
                 </p>
 
             </div>
@@ -162,107 +163,100 @@
         </div>
 
 
-        <div class="health-dashboard">
+       <div class="health-dashboard">
+
+    <!-- SOIL HEALTH SCORE -->
+    <div class="health-score-area">
+
+        <span class="metric-label">
+            SOIL HEALTH
+        </span>
+
+        <div class="health-score">
+            <span id="soilHealthScore">
+                --
+            </span>
+        </div>
+
+        <div class="health-progress">
+            <div
+                id="soilHealthProgress"
+                class="health-progress-fill"
+            ></div>
+        </div>
+
+        <span class="health-caption">
+            Overall condition of monitored soil
+        </span>
+
+    </div>
 
 
-            <!-- SCORE -->
+    <!-- CURRENT CONDITION -->
+    <div class="health-status-area">
 
-            <div class="health-score-area">
+        <span class="metric-label">
+            CURRENT CONDITION
+        </span>
 
-                <span class="metric-label">
-                    SOIL HEALTH SCORE
-                </span>
+        <div
+            id="soilHealthLevel"
+            class="health-status-badge"
+        >
+            --
+        </div>
 
-                <div class="health-score">
-                    <span id="soilHealthScore">
-                        --
-                    </span>
-                </div>
+        <p id="soilHealthMessage">
+            Waiting for soil health analysis...
+        </p>
 
-                <div class="health-progress">
-                    <div
-                        id="soilHealthProgress"
-                        class="health-progress-fill"
-                    ></div>
-                </div>
-
-                <span class="health-caption">
-                    Composite soil assessment
-                </span>
-
-            </div>
+    </div>
 
 
-            <!-- STATUS -->
+    <!-- SUPPORTING INFORMATION -->
+    <div class="health-summary">
 
-            <div class="health-status-area">
+        <div class="summary-stat">
 
-                <span class="metric-label">
-                    CURRENT CONDITION
-                </span>
+            <strong id="monitoredParameterCount">
+                7
+            </strong>
 
-                <div
-                    id="soilHealthLevel"
-                    class="health-status-badge"
-                >
-                    --
-                </div>
-
-                <p id="soilHealthMessage">
-                    Waiting for soil health analysis...
-                </p>
-
-            </div>
-
-
-            <!-- SUMMARY -->
-
-            <div class="health-summary">
-
-                <div class="summary-stat">
-
-                    <strong id="monitoredParameterCount">
-                        7
-                    </strong>
-
-                    <span>
-                        Parameters monitored
-                    </span>
-
-                </div>
-
-
-                <div class="summary-stat">
-
-                    <strong id="soilAlertCount">
-                        0
-                    </strong>
-
-                    <span>
-                        Requiring attention
-                    </span>
-
-                </div>
-
-
-                <div class="summary-stat">
-
-                    <strong id="soilUpdateStatus">
-                        LIVE
-                    </strong>
-
-                    <span>
-                        Monitoring status
-                    </span>
-
-                </div>
-
-            </div>
+            <span>
+                Parameters monitored
+            </span>
 
         </div>
 
-    </section>
 
+        <div class="summary-stat">
+
+            <strong id="soilAlertCount">
+                0
+            </strong>
+
+            <span>
+                Requiring attention
+            </span>
+
+        </div>
+
+
+        <div class="summary-stat">
+
+            <strong id="soilUpdateStatus">
+                LIVE
+            </strong>
+
+            <span>
+                Monitoring status
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
 
 
     <!-- =====================================================
