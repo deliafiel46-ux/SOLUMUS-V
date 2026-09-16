@@ -766,6 +766,242 @@
                 padding: 20px;
             }
         }
+
+        /* =========================================================
+           MOBILE / TOUCH OPTIMIZATION
+        ========================================================= */
+
+        @media (max-width: 760px) {
+            body {
+                overflow-x: hidden;
+            }
+
+            .top-header {
+                padding: 12px 12px 13px;
+            }
+
+            .header-inner {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .brand-title {
+                font-size: 19px;
+            }
+
+            .brand-subtitle {
+                font-size: 9px;
+                line-height: 1.35;
+            }
+
+            .status-group {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+
+            .status-pill {
+                min-height: 32px;
+                padding: 8px 10px;
+                font-size: 9px;
+            }
+
+            main {
+                width: calc(100% - 14px);
+                margin-top: 9px;
+            }
+
+            .page-heading {
+                margin: 0 2px 10px;
+            }
+
+            .page-heading h1 {
+                font-size: 22px;
+                line-height: 1.15;
+            }
+
+            .page-heading p {
+                font-size: 11px;
+                line-height: 1.4;
+            }
+
+            .map-shell {
+                height: calc(100dvh - 205px);
+                min-height: 440px;
+                border-radius: 14px;
+            }
+
+            #fieldMap {
+                min-height: 440px;
+            }
+
+            .map-control-panel {
+                top: 10px;
+                left: 10px;
+                width: 145px;
+                gap: 7px;
+            }
+
+            .map-control-button {
+                min-height: 42px;
+                padding: 10px 9px;
+                font-size: 10px;
+                touch-action: manipulation;
+            }
+
+            .map-legend {
+                right: 8px;
+                bottom: 8px;
+                min-width: 145px;
+                padding: 9px;
+            }
+
+            .legend-row {
+                margin: 5px 0;
+                font-size: 11px;
+            }
+
+            .weather-tab {
+                width: 42px;
+                height: 82px;
+                font-size: 22px;
+                touch-action: manipulation;
+            }
+
+            .weather-sidebar {
+                width: 100vw;
+                max-width: 100vw;
+            }
+
+            .weather-sidebar-inner {
+                padding: 18px 16px 28px;
+            }
+
+            .weather-close,
+            .modal-close {
+                width: 42px;
+                height: 42px;
+                font-size: 22px;
+            }
+
+            .modal-backdrop {
+                align-items: flex-end;
+                padding: 8px;
+            }
+
+            .modal-card {
+                width: 100%;
+                max-height: 92dvh;
+                padding: 20px 16px 18px;
+                border-radius: 18px 18px 12px 12px;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .modal-card h2 {
+                font-size: 21px;
+                margin-right: 48px;
+            }
+
+            .modal-description {
+                font-size: 12px;
+                margin-bottom: 14px;
+            }
+
+            .health-panel {
+                padding: 15px;
+            }
+
+            .health-top {
+                align-items: flex-start;
+            }
+
+            .health-score {
+                font-size: 37px;
+            }
+
+            .parameters-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .parameter-card {
+                padding: 11px;
+            }
+
+            .parameter-card strong {
+                font-size: 17px;
+            }
+
+            .parameter-unit {
+                font-size: 10px;
+            }
+
+            .recommendation-box {
+                padding: 12px;
+            }
+
+            .modal-actions {
+                gap: 7px;
+            }
+
+            .action-button {
+                min-height: 42px;
+                flex: 1 1 140px;
+            }
+
+            .sensor-marker {
+                width: 44px;
+                height: 44px;
+            }
+
+            .sensor-marker-pulse {
+                width: 31px;
+                height: 31px;
+            }
+
+            .sensor-marker-dot {
+                width: 18px;
+                height: 18px;
+                border-width: 3px;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .status-pill {
+                font-size: 8px;
+                padding: 7px 8px;
+            }
+
+            .map-control-panel {
+                width: 132px;
+            }
+
+            .map-control-button {
+                font-size: 9px;
+            }
+
+            .map-legend {
+                min-width: 132px;
+            }
+
+            .legend-row {
+                font-size: 10px;
+            }
+
+            .parameters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .health-top {
+                flex-direction: column;
+            }
+
+            .health-badge {
+                align-self: flex-start;
+            }
+        }
     </style>
 </head>
 
@@ -783,12 +1019,12 @@
         <div class="status-group">
             <div id="systemStatus" class="status-pill">
                 <span class="status-dot"></span>
-                <span id="systemStatusText">SOLUMUS-V CONNECTING...</span>
+                <span id="systemStatusText">SOLUMUS-V CHECKING CLOUD...</span>
             </div>
 
             <div id="sensorStatus" class="status-pill">
                 <span class="status-dot"></span>
-                <span id="sensorStatusText">SENSOR NODE CONNECTING...</span>
+                <span id="sensorStatusText">SENSOR NODE CHECKING DATA...</span>
             </div>
         </div>
     </div>
@@ -1151,7 +1387,7 @@
 
         text.textContent = online
             ? "SENSOR NODE ONLINE"
-            : "SENSOR NODE NO DATA";
+            : "SENSOR NODE NO RECENT DATA";
     }
 
     /* =========================================================
@@ -1327,16 +1563,12 @@
 
         /*
            IMPORTANT:
-           Clicking the sensor node opens the soil modal directly.
-           The popup is also bound as a secondary interaction.
+           Clicking/tapping the sensor node opens the soil modal directly.
+           No Leaflet popup is used, so mobile users get one clear interaction.
         */
         nodeMarker.on("click", () => {
             openNodeModal();
         });
-
-        nodeMarker.bindPopup(
-            createNodePopup()
-        );
 
         nodeCoverageCircle = L.circle(
             [lat, lng],
@@ -1352,7 +1584,7 @@
         /*
            Keep the marker above the coverage circle.
         */
-        nodeMarker.bringToFront();
+        nodeMarker.setZIndexOffset(1000);
     }
 
     function refreshNodeVisuals() {
@@ -1383,12 +1615,97 @@
                 );
             }
 
-            const data = await response.json();
+            /*
+               The API returns a wrapper:
+               {
+                   success,
+                   data: { soil readings },
+                   soilHealth: { score, level, message, parameters },
+                   recommendations: [...]
+               }
 
-            latestSoilData = data;
+               Normalize that response so the map/modal can use one
+               consistent data object.
+            */
+            const payload = await response.json();
 
+            console.log(
+                "SOLUMUS-V API RESPONSE:",
+                payload
+            );
+
+            const reading = payload.data || {};
+            const health = payload.soilHealth || {};
+
+            latestSoilData = {
+                moisture: reading.moisture,
+                temperature: reading.temperature,
+                ph: reading.ph,
+                ec: reading.ec,
+                nitrogen: reading.nitrogen,
+                phosphorus: reading.phosphorus,
+                potassium: reading.potassium,
+                timestamp: reading.timestamp || null,
+
+                overallHealth:
+                    health.score ?? 0,
+
+                healthCategory:
+                    health.level || "NO DATA",
+
+                healthMessage:
+                    health.message ||
+                    "No soil health assessment available.",
+
+                healthParameters:
+                    health.parameters || {},
+
+                recommendations:
+                    payload.recommendations || [],
+
+                irrigationRisk:
+                    payload.irrigationRisk || "--"
+            };
+
+            console.log(
+                "NORMALIZED SOIL DATA:",
+                latestSoilData
+            );
+
+            /*
+               SOLUMUS-V ONLINE means the public website can reach
+               the cloud backend.
+
+               SENSOR NODE ONLINE means a recent sensor reading
+               exists. The visitor's phone is NOT expected to
+               connect directly to the physical sensor.
+            */
             setSystemStatus(true);
-            setSensorStatus(true);
+
+            const timestampMs =
+                latestSoilData.timestamp
+                    ? new Date(
+                        latestSoilData.timestamp
+                    ).getTime()
+                    : 0;
+
+            const ageMs =
+                Date.now() - timestampMs;
+
+            /*
+               The Python gateway sends approximately every 10 seconds.
+               A 60-second freshness window avoids false "offline"
+               states during normal network/server delays.
+            */
+            const SENSOR_FRESHNESS_MS =
+                60 * 1000;
+
+            const sensorIsFresh =
+                Number.isFinite(timestampMs) &&
+                ageMs >= -5000 &&
+                ageMs <= SENSOR_FRESHNESS_MS;
+
+            setSensorStatus(sensorIsFresh);
 
             updateNodeInterface();
             refreshNodeVisuals();
@@ -1400,14 +1717,13 @@
             );
 
             /*
-               The backend can still be online even when a current
-               soil reading cannot be retrieved.
+               The backend itself may be unreachable, so both statuses
+               are updated accordingly. No direct phone-to-sensor
+               connection is required.
             */
+            latestSoilData = null;
+            setSystemStatus(false);
             setSensorStatus(false);
-
-            if (!latestSoilData) {
-                setSystemStatus(false);
-            }
         }
     }
 
