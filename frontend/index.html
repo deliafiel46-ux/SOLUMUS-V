@@ -3343,18 +3343,25 @@ if (!MAPBOX_ACCESS_TOKEN) {
             "monitorPotassium",
             "monitorHealth"
         ].forEach(id => {
-            if ($(id)) $(id).textContent = "--";
+            const element = $(id);
+            if (element) element.textContent = "--";
         });
 
-        $("monitorHealthLevel").textContent = message;
-        $("monitorRecommendations").textContent = message;
+        const healthLevel = $("monitorHealthLevel");
+        const recommendations = $("monitorRecommendations");
+        if (healthLevel) healthLevel.textContent = message;
+        if (recommendations) recommendations.textContent = message;
     }
 
     function clearMonitoringHistoryAndCharts(message) {
-        $("historyLoading").style.display = "none";
-        $("chartsLoading").style.display = "none";
-        $("historyContent").innerHTML = `<div class="monitoring-empty">${escapeHTML(message)}</div>`;
-        $("chartsContent").innerHTML = `<div class="monitoring-empty" style="grid-column:1/-1">${escapeHTML(message)}</div>`;
+        const historyLoading = $("historyLoading");
+        const chartsLoading = $("chartsLoading");
+        const historyContent = $("historyContent");
+        const chartsContent = $("chartsContent");
+        if (historyLoading) historyLoading.style.display = "none";
+        if (chartsLoading) chartsLoading.style.display = "none";
+        if (historyContent) historyContent.innerHTML = `<div class="monitoring-empty">${escapeHTML(message)}</div>`;
+        if (chartsContent) chartsContent.innerHTML = `<div class="monitoring-empty" style="grid-column:1/-1">${escapeHTML(message)}</div>`;
     }
 
     function selectMonitoringSensor(sensorId) {
@@ -3364,20 +3371,18 @@ if (!MAPBOX_ACCESS_TOKEN) {
             button.classList.toggle("active", button.dataset.sensor === sensorId);
         });
 
-        $("historySensorName").textContent = sensorId;
-        $("chartsSensorName").textContent = sensorId;
-
-        if (sensorId === "SOLUMUS-V-02" || sensorId === "SOLUMUS-V-03") {
-            clearMonitoringValues("No data — sensor node is not deployed.");
-            clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
-            return;
-        }
-
+        // Only the deployed sensor node can load live/history/chart data.
+        // Nodes 02 and 03 are intentionally blank because they are not deployed.
         if (sensorId !== NODE_ID) {
             clearMonitoringValues("No data — sensor node is not deployed.");
             clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
             return;
         }
+
+        const historySensorName = $("historySensorName");
+        const chartsSensorName = $("chartsSensorName");
+        if (historySensorName) historySensorName.textContent = sensorId;
+        if (chartsSensorName) chartsSensorName.textContent = sensorId;
 
         loadMonitoringLiveData();
         loadMonitoringHistory();
