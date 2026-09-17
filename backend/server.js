@@ -999,7 +999,100 @@ app.get("/api/weather", async (req, res) => {
         });
     }
 });
+// ==============================
+// SENSOR LOCATION
+// ==============================
 
+app.get("/api/sensor-location", async (req, res) => {
+    try {
+        const nodeId = req.query.nodeId || "SOLUMUS-V-01";
+
+        const snapshot = await db
+            .ref(`devices/${nodeId}/location`)
+            .once("value");
+
+        const location = snapshot.val();
+
+        if (!location) {
+            return res.status(404).json({
+                success: false,
+                message: "No registered sensor location found."
+            });
+        }
+
+        res.json({
+            success: true,
+            data: location
+        });
+
+    } catch (error) {
+        console.error("Sensor location GET error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to retrieve sensor location.",
+            error: error.message
+        });
+    }
+});
+
+
+app.post("/api/sensor-location", async (req, res) => {
+    try {
+        const {
+            nodeId = "SOLUMUS-V-01",
+            latitude,
+            longitude
+        } = req.body;
+
+        const lat = Number(latitude);
+        const lon = Number(longitude);
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon) ||
+            lat < -90 ||
+            lat > 90 ||
+            lon < -180 ||
+            lon > 180
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid latitude or longitude."
+            });
+        }
+
+        const location = {
+            nodeId,
+            latitude: lat,
+            longitude: lon,
+            updatedAt: Date.now()
+        };
+
+        await db
+            .ref(`devices/${nodeId}/location`)
+            .set(location);
+
+        console.log(
+            `Sensor location updated: ${nodeId} → ${lat}, ${lon}`
+        );
+
+        res.json({
+            success: true,
+            message: "Sensor location saved successfully.",
+            data: location
+        });
+
+    } catch (error) {
+        console.error("Sensor location POST error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to save sensor location.",
+            error: error.message
+        });
+    }
+});
 
 // ==============================
 // START SERVER

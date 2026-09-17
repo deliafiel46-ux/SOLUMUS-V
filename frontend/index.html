@@ -1432,8 +1432,8 @@
     const NODE_ID = "SOLUMUS-V-01";
 
     const DEFAULT_LOCATION = {
-        latitude: 10.3157,
-        longitude: 123.8854
+        latitude: 10.017268,
+        longitude: 123.595657
     };
 
     /*
@@ -2153,54 +2153,92 @@ if (!MAPBOX_ACCESS_TOKEN) {
     }
 
     /* =========================================================
-       LOCATION STORAGE
+       SENSOR LOCATION — CENTRAL SERVER
     ========================================================= */
 
-    function saveLocationLocally(latitude, longitude) {
-        const location = {
-            latitude: Number(latitude),
-            longitude: Number(longitude),
-            savedAt: Date.now()
-        };
-
-        localStorage.setItem(
-            LOCATION_STORAGE_KEY,
-            JSON.stringify(location)
-        );
-
-        currentLocation = location;
-    }
-
-    function loadSavedLocation() {
+    async function loadSensorLocation() {
         try {
-            const raw = localStorage.getItem(
-                LOCATION_STORAGE_KEY
+            const response = await fetch(
+                `${API_URL}/api/sensor-location?nodeId=${encodeURIComponent(NODE_ID)}`,
+                { cache: "no-store" }
             );
 
-            if (!raw) return null;
-
-            const location = JSON.parse(raw);
-
-            if (
-                !Number.isFinite(
-                    Number(location.latitude)
-                ) ||
-                !Number.isFinite(
-                    Number(location.longitude)
-                )
-            ) {
-                return null;
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
 
-            return {
+            const payload = await response.json();
+            const location = payload.data;
+
+            if (
+                !location ||
+                !Number.isFinite(Number(location.latitude)) ||
+                !Number.isFinite(Number(location.longitude))
+            ) {
+                console.warn("SOLUMUS-V: No registered sensor location found.");
+                return;
+            }
+
+            currentLocation = {
                 latitude: Number(location.latitude),
                 longitude: Number(location.longitude),
-                savedAt: location.savedAt
+                savedAt: location.updatedAt
             };
 
-        } catch {
-            return null;
+            displayNode(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+
+            if (map) {
+                map.flyTo({
+                    center: [
+                        currentLocation.longitude,
+                        currentLocation.latitude
+                    ],
+                    zoom: 17,
+                    pitch: 60,
+                    bearing: -15,
+                    essential: true
+                });
+            }
+
+            loadWeather(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+
+            console.log("SOLUMUS-V SENSOR LOCATION:", currentLocation);
+        } catch (error) {
+            console.error("Failed to load sensor location:", error);
         }
+    }
+
+    async function saveSensorLocation(latitude, longitude) {
+        const response = await fetch(
+            `${API_URL}/api/sensor-location`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nodeId: NODE_ID,
+                    latitude: Number(latitude),
+                    longitude: Number(longitude)
+                })
+            }
+        );
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok || !payload.success) {
+            throw new Error(
+                payload.message || `HTTP ${response.status}`
+            );
+        }
+
+        return payload.data;
     }
 
     /* =========================================================
@@ -2214,22 +2252,53 @@ if (!MAPBOX_ACCESS_TOKEN) {
             "false"
         );
 
-        const saved = loadSavedLocation();
+        $("latitudeValue").textContent = "Loading...";
+        $("longitudeValue").textContent = "Loading...";
+        $("saveNodeButton").disabled = true;
 
-        if (saved) {
+        setLocationStatus(
+            "Loading the registered Node 01 sensor location...",
+            ""
+        );
+
+        try {
+            const response = await fetch(
+                `${API_URL}/api/sensor-location?nodeId=${encodeURIComponent(NODE_ID)}`,
+                { cache: "no-store" }
+            );
+
+            const payload = await response.json();
+            const location = payload.data;
+
+            if (!response.ok || !location) {
+                throw new Error(
+                    payload.message || "No registered sensor location."
+                );
+            }
+
+            currentLocation = {
+                latitude: Number(location.latitude),
+                longitude: Number(location.longitude),
+                savedAt: location.updatedAt
+            };
+
             $("latitudeValue").textContent =
-                saved.latitude.toFixed(6);
+                currentLocation.latitude.toFixed(6);
 
             $("longitudeValue").textContent =
-                saved.longitude.toFixed(6);
-
-            currentLocation = saved;
+                currentLocation.longitude.toFixed(6);
 
             $("saveNodeButton").disabled = false;
 
             setLocationStatus(
-                "A saved Node 01 location already exists. You can capture a new location if the sensor has been moved.",
+                "Registered Node 01 location. Capture a new location only if the physical sensor has been moved.",
                 "success"
+            );
+        } catch (error) {
+            console.error("Sensor location load error:", error);
+            setLocationStatus(
+                "No registered sensor location found. Capture the location where the physical sensor is deployed.",
+                "error"
             );
         }
     }
@@ -2361,15 +2430,24 @@ if (!MAPBOX_ACCESS_TOKEN) {
     function saveNodeLocation() {
         if (!currentLocation) return;
 
-        saveLocationLocally(
-            currentLocation.latitude,
-            currentLocation.longitude
-        );
+        try {
+            $("saveNodeButton").disabled = true;
 
-        displayNode(
-            currentLocation.latitude,
-            currentLocation.longitude
-        );
+            const saved = await saveSensorLocation(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+
+            currentLocation = {
+                latitude: Number(saved.latitude),
+                longitude: Number(saved.longitude),
+                savedAt: saved.updatedAt
+            };
+
+            displayNode(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
 
         map.flyTo({
             center: [
@@ -2382,17 +2460,23 @@ if (!MAPBOX_ACCESS_TOKEN) {
             essential: true
         });
 
-        setLocationStatus(
-            "Node 01 location saved on this monitoring device. The map will use this fixed location until it is intentionally changed.",
-            "success"
-        );
+            setLocationStatus(
+                "Node 01 sensor location saved to the SOLUMUS-V server. All devices will use this registered location.",
+                "success"
+            );
 
-        $("saveNodeButton").disabled = true;
-
-        loadWeather(
-            currentLocation.latitude,
-            currentLocation.longitude
-        );
+            loadWeather(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+        } catch (error) {
+            console.error("Sensor location save error:", error);
+            $("saveNodeButton").disabled = false;
+            setLocationStatus(
+                `Unable to save sensor location: ${error.message}`,
+                "error"
+            );
+        }
     }
 
     /* =========================================================
@@ -2767,6 +2851,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
     initializeMap();
 
+    loadSensorLocation();
     loadSoilData();
 
     if (currentLocation) {
