@@ -1704,6 +1704,11 @@
                     <span class="parameter-unit">mg/kg</span>
                 </div>
 
+                <div class="parameter-card">
+                    <span>Irrigation Risk</span>
+                    <strong id="nodeIrrigationRisk">--</strong>
+                    <span class="parameter-unit">current assessment</span>
+                </div>
             </div>
         </div>
 
@@ -2381,6 +2386,9 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 latestSoilData.soilHealth?.irrigationRisk,
                 "—"
             );
+
+        $("nodeIrrigationRisk").textContent =
+            String(irrigationRisk);
 
         $("nodeRecommendation").textContent =
             getRecommendationText();
@@ -3389,6 +3397,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
     async function loadMonitoringLiveData() {
         if (selectedMonitoringSensor !== NODE_ID) {
             clearMonitoringValues("No data — sensor node is not deployed.");
+            clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
             return;
         }
 
@@ -3556,7 +3565,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
             ctx.fillText(value.toFixed(decimals), 3, y + 3);
         }
 
-        ctx.strokeStyle = "#2f6f4e";
+        ctx.strokeStyle = "#2563eb";
         ctx.lineWidth = 2;
         ctx.beginPath();
 
@@ -3575,7 +3584,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
         ctx.stroke();
 
-        ctx.fillStyle = "#2f6f4e";
+        ctx.fillStyle = "#2563eb";
         readings.forEach((item, index) => {
             const value = Number(item[key]);
             if (!Number.isFinite(value)) return;
