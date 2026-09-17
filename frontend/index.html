@@ -1531,17 +1531,30 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
         map = new mapboxgl.Map({
             container: "fieldMap",
+
             style: "mapbox://styles/mapbox/standard-satellite",
+
             center: [
                 currentLocation.longitude,
                 currentLocation.latitude
             ],
-            zoom: 15,
-            pitch: 55,
-            bearing: -15,
+
+            zoom: 16,
+            pitch: 65,
+            bearing: -20,
+
             antialias: true,
             attributionControl: true,
-            cooperativeGestures: true
+            cooperativeGestures: true,
+
+            config: {
+                basemap: {
+                    showPlaceLabels: true,
+                    showRoadLabels: true,
+                    showPointOfInterestLabels: true,
+                    lightPreset: "day"
+                }
+            }
         });
 
         map.addControl(
@@ -1566,14 +1579,14 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
             map.setTerrain({
                 source: "mapbox-dem",
-                exaggeration: 1.15
+                exaggeration: 1.35
             });
 
             /*
                Start with a tilted 3D field view.
             */
-            map.setPitch(55);
-            map.setBearing(-15);
+            map.setPitch(65);
+            map.setBearing(-20);
 
             displayNode(
                 currentLocation.latitude,
