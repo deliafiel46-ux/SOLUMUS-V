@@ -3367,6 +3367,12 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("historySensorName").textContent = sensorId;
         $("chartsSensorName").textContent = sensorId;
 
+        if (sensorId === "SOLUMUS-V-02" || sensorId === "SOLUMUS-V-03") {
+            clearMonitoringValues("No data — sensor node is not deployed.");
+            clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
+            return;
+        }
+
         if (sensorId !== NODE_ID) {
             clearMonitoringValues("No data — sensor node is not deployed.");
             clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
@@ -3463,6 +3469,11 @@ if (!MAPBOX_ACCESS_TOKEN) {
     }
 
     async function loadMonitoringHistory() {
+        if (selectedMonitoringSensor === "SOLUMUS-V-02" || selectedMonitoringSensor === "SOLUMUS-V-03") {
+            clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
+            return;
+        }
+
         if (selectedMonitoringSensor !== NODE_ID) {
             clearMonitoringHistoryAndCharts("No stored soil readings are available for this sensor node.");
             return;
@@ -3565,7 +3576,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
             ctx.fillText(value.toFixed(decimals), 3, y + 3);
         }
 
-        ctx.strokeStyle = "#2563eb";
+        ctx.strokeStyle = "#38bdf8";
         ctx.lineWidth = 2;
         ctx.beginPath();
 
@@ -3584,7 +3595,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
         ctx.stroke();
 
-        ctx.fillStyle = "#2563eb";
+        ctx.fillStyle = "#38bdf8";
         readings.forEach((item, index) => {
             const value = Number(item[key]);
             if (!Number.isFinite(value)) return;
