@@ -1191,6 +1191,41 @@
         .monitoring-message { width:100%; }
         .recommendation-list { width:100%; text-align:left; margin:0; padding-left:20px; }
         .recommendation-list li { margin:7px 0; }
+
+        .history-toolbar {
+            display:flex; align-items:center; justify-content:space-between; gap:12px;
+            margin-bottom:12px; flex-wrap:wrap;
+        }
+        .history-status { color:var(--muted); font-size:11px; }
+        .history-table-wrap {
+            overflow:auto; border:1px solid var(--border); border-radius:12px;
+            background:var(--surface);
+        }
+        .history-table { width:100%; border-collapse:collapse; min-width:980px; }
+        .history-table th, .history-table td {
+            padding:10px 11px; border-bottom:1px solid var(--border);
+            text-align:left; white-space:nowrap; font-size:10px;
+        }
+        .history-table th { background:var(--soft); color:var(--primary); font-weight:800; }
+        .history-table tbody tr:last-child td { border-bottom:none; }
+        .history-empty { padding:28px; text-align:center; color:var(--muted); font-size:12px; }
+        .chart-toolbar {
+            display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;
+        }
+        .chart-select {
+            border:1px solid var(--border); background:var(--surface); color:var(--text);
+            border-radius:9px; padding:9px 11px; font-size:11px; font-weight:700;
+        }
+        .chart-wrap {
+            position:relative; height:360px; padding:14px;
+            background:var(--soft); border:1px solid var(--border); border-radius:12px;
+        }
+        .chart-note { color:var(--muted); font-size:10px; margin-top:9px; }
+        .history-refresh {
+            border:1px solid var(--border); background:var(--surface); color:var(--primary);
+            border-radius:9px; padding:8px 11px; font-size:10px; font-weight:800; cursor:pointer;
+        }
+        .history-refresh:hover { background:var(--soft); }
         @media (max-width:760px) {
             .page-nav-button { padding:10px 12px; }
             .live-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1318,11 +1353,52 @@
             </div>
 
             <div id="monitorPaneHistory" class="monitoring-pane">
-                <div class="monitoring-placeholder">Soil history will be connected to the stored sensor records for <strong id="historySensorName">SOLUMUS-V-01</strong>.</div>
+                <div class="history-toolbar">
+                    <div>
+                        <strong id="historySensorName">SOLUMUS-V-01</strong>
+                        <div id="historyStatus" class="history-status">Loading stored readings...</div>
+                    </div>
+                    <button id="historyRefreshButton" class="history-refresh" type="button">REFRESH HISTORY</button>
+                </div>
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>DATE / TIME</th>
+                                <th>MOISTURE</th>
+                                <th>TEMPERATURE</th>
+                                <th>pH</th>
+                                <th>EC</th>
+                                <th>NITROGEN</th>
+                                <th>PHOSPHORUS</th>
+                                <th>POTASSIUM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="8" class="history-empty">Loading stored readings...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div id="monitorPaneCharts" class="monitoring-pane">
-                <div class="monitoring-placeholder">Charts will use the historical readings of <strong id="chartsSensorName">SOLUMUS-V-01</strong>.</div>
+                <div class="chart-toolbar">
+                    <strong id="chartsSensorName">SOLUMUS-V-01</strong>
+                    <label for="chartParameter">Parameter:</label>
+                    <select id="chartParameter" class="chart-select">
+                        <option value="moisture">Moisture (%)</option>
+                        <option value="temperature">Temperature (°C)</option>
+                        <option value="ph">pH</option>
+                        <option value="ec">Electrical Conductivity (µS/cm)</option>
+                        <option value="nitrogen">Nitrogen (mg/kg)</option>
+                        <option value="phosphorus">Phosphorus (mg/kg)</option>
+                        <option value="potassium">Potassium (mg/kg)</option>
+                    </select>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="soilHistoryChart"></canvas>
+                </div>
+                <div class="chart-note">The chart uses the stored soil readings retrieved from SOLUMUS-V's history endpoint.</div>
             </div>
 
             <div id="monitorPaneRecommendations" class="monitoring-pane">
@@ -1552,6 +1628,7 @@
 
 <!-- Mapbox GL JS -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.30.0/mapbox-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     /* =========================================================
@@ -3025,6 +3102,18 @@ if (!MAPBOX_ACCESS_TOKEN) {
        MAIN VIEW / SOIL MONITORING TABS
     ========================================================= */
     let selectedMonitoringSensor = NODE_ID;
+    let soilHistoryCache = [];
+    let soilHistoryChart = null;
+
+    const CHART_PARAMETERS = {
+        moisture: { label: "Soil Moisture", unit: "%", decimals: 1 },
+        temperature: { label: "Soil Temperature", unit: "°C", decimals: 1 },
+        ph: { label: "Soil pH", unit: "pH", decimals: 2 },
+        ec: { label: "Electrical Conductivity", unit: "µS/cm", decimals: 0 },
+        nitrogen: { label: "Nitrogen", unit: "mg/kg", decimals: 0 },
+        phosphorus: { label: "Phosphorus", unit: "mg/kg", decimals: 0 },
+        potassium: { label: "Potassium", unit: "mg/kg", decimals: 0 }
+    };
 
     function switchMainView(view) {
         const isSoil = view === "soil";
@@ -3032,7 +3121,10 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("soilMonitoringView").classList.toggle("active", isSoil);
         $("fieldMonitoringTab").classList.toggle("active", !isSoil);
         $("soilMonitoringTab").classList.toggle("active", isSoil);
-        if (isSoil) loadMonitoringLiveData();
+        if (isSoil) {
+            loadMonitoringLiveData();
+            loadSoilHistory();
+        }
         if (!isSoil && map) setTimeout(() => map.resize(), 50);
     }
 
@@ -3044,6 +3136,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("historySensorName").textContent = sensorId;
         $("chartsSensorName").textContent = sensorId;
         loadMonitoringLiveData();
+        loadSoilHistory();
     }
 
     function switchMonitoringPane(pane) {
@@ -3053,26 +3146,37 @@ if (!MAPBOX_ACCESS_TOKEN) {
         document.querySelectorAll(".monitoring-pane").forEach(panel => panel.classList.remove("active"));
         const panel = $("monitorPane" + pane.charAt(0).toUpperCase() + pane.slice(1));
         if (panel) panel.classList.add("active");
+
+        if (pane === "history" || pane === "charts") {
+            loadSoilHistory();
+        }
+    }
+
+    function setMonitoringUnavailable() {
+        $("monitorMoisture").textContent = "--";
+        $("monitorTemperature").textContent = "--";
+        $("monitorPH").textContent = "--";
+        $("monitorEC").textContent = "--";
+        $("monitorNitrogen").textContent = "--";
+        $("monitorPhosphorus").textContent = "--";
+        $("monitorPotassium").textContent = "--";
+        $("monitorHealth").textContent = "--";
+        $("monitorHealthLevel").textContent = "Not registered";
     }
 
     async function loadMonitoringLiveData() {
         if (selectedMonitoringSensor !== NODE_ID) {
-            $("monitorMoisture").textContent = "--";
-            $("monitorTemperature").textContent = "--";
-            $("monitorPH").textContent = "--";
-            $("monitorEC").textContent = "--";
-            $("monitorNitrogen").textContent = "--";
-            $("monitorPhosphorus").textContent = "--";
-            $("monitorPotassium").textContent = "--";
-            $("monitorHealth").textContent = "--";
-            $("monitorHealthLevel").textContent = "Not registered";
-            $("monitorRecommendations").textContent = `${selectedMonitoringSensor} is not registered with the current SOLUMUS-V backend.`;
+            setMonitoringUnavailable();
+            $("monitorRecommendations").innerHTML =
+                `<div class="monitoring-message">${escapeHTML(selectedMonitoringSensor)} is not registered with the current backend.</div>`;
             return;
         }
+
         try {
             const response = await fetch(`${API_URL}/api/soil-data`, { cache: "no-store" });
             const payload = await response.json();
             if (!response.ok || !payload.success) throw new Error(payload.message || `HTTP ${response.status}`);
+
             const data = payload.data || {};
             const health = payload.soilHealth || {};
             $("monitorMoisture").textContent = formatValue(data.moisture, 1);
@@ -3084,6 +3188,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
             $("monitorPotassium").textContent = formatValue(data.potassium, 0);
             $("monitorHealth").textContent = health.score ?? "--";
             $("monitorHealthLevel").textContent = health.level || "No classification";
+
             const recommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
             $("monitorRecommendations").innerHTML = recommendations.length
                 ? `<div class="monitoring-message"><strong>${escapeHTML(selectedMonitoringSensor)}</strong><ul class="recommendation-list">${recommendations.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul></div>`
@@ -3091,6 +3196,128 @@ if (!MAPBOX_ACCESS_TOKEN) {
         } catch (error) {
             console.error("Soil monitoring error:", error);
             $("monitorRecommendations").textContent = "Unable to load monitoring data.";
+        }
+    }
+
+    function formatHistoryTimestamp(timestamp) {
+        if (!timestamp) return "--";
+        const date = new Date(timestamp);
+        if (Number.isNaN(date.getTime())) return String(timestamp);
+        return date.toLocaleString("en-PH", {
+            year: "numeric", month: "short", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit",
+            hour12: true
+        });
+    }
+
+    function renderSoilHistory() {
+        const body = $("historyTableBody");
+        if (!soilHistoryCache.length) {
+            body.innerHTML = `<tr><td colspan="8" class="history-empty">No stored readings available for ${escapeHTML(selectedMonitoringSensor)}.</td></tr>`;
+            $("historyStatus").textContent = "0 stored readings";
+            return;
+        }
+
+        body.innerHTML = soilHistoryCache.slice().reverse().map(reading => `
+            <tr>
+                <td>${escapeHTML(formatHistoryTimestamp(reading.timestamp))}</td>
+                <td>${escapeHTML(formatValue(reading.moisture, 1))} %</td>
+                <td>${escapeHTML(formatValue(reading.temperature, 1))} °C</td>
+                <td>${escapeHTML(formatValue(reading.ph, 2))}</td>
+                <td>${escapeHTML(formatValue(reading.ec, 0))} µS/cm</td>
+                <td>${escapeHTML(formatValue(reading.nitrogen, 0))} mg/kg</td>
+                <td>${escapeHTML(formatValue(reading.phosphorus, 0))} mg/kg</td>
+                <td>${escapeHTML(formatValue(reading.potassium, 0))} mg/kg</td>
+            </tr>
+        `).join("");
+
+        $("historyStatus").textContent = `${soilHistoryCache.length} stored reading(s) · latest shown first`;
+    }
+
+    function renderSoilHistoryChart() {
+        const canvas = $("soilHistoryChart");
+        if (!canvas) return;
+
+        if (soilHistoryChart) {
+            soilHistoryChart.destroy();
+            soilHistoryChart = null;
+        }
+
+        if (!soilHistoryCache.length) return;
+
+        const parameter = $("chartParameter").value;
+        const config = CHART_PARAMETERS[parameter];
+        const labels = soilHistoryCache.map(reading => formatHistoryTimestamp(reading.timestamp));
+        const values = soilHistoryCache.map(reading => Number(reading[parameter])).map(value => Number.isFinite(value) ? value : null);
+
+        soilHistoryChart = new Chart(canvas, {
+            type: "line",
+            data: {
+                labels,
+                datasets: [{
+                    label: `${config.label} (${config.unit})`,
+                    data: values,
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    tension: 0.25,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: "index", intersect: false },
+                plugins: {
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            label: context => {
+                                const value = context.parsed.y;
+                                return `${config.label}: ${Number.isFinite(value) ? value.toFixed(config.decimals) : "--"} ${config.unit}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { maxRotation: 45, minRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+                        title: { display: true, text: "Recorded time" }
+                    },
+                    y: {
+                        title: { display: true, text: config.unit }
+                    }
+                }
+            }
+        });
+    }
+
+    async function loadSoilHistory() {
+        if (selectedMonitoringSensor !== NODE_ID) {
+            soilHistoryCache = [];
+            renderSoilHistory();
+            if (soilHistoryChart) { soilHistoryChart.destroy(); soilHistoryChart = null; }
+            return;
+        }
+
+        try {
+            $("historyStatus").textContent = "Loading stored readings...";
+            const response = await fetch(`${API_URL}/api/soil-history/recent`, { cache: "no-store" });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) throw new Error(payload.message || `HTTP ${response.status}`);
+
+            soilHistoryCache = Array.isArray(payload.readings)
+                ? payload.readings.filter(reading => reading && reading.timestamp)
+                : [];
+
+            renderSoilHistory();
+            renderSoilHistoryChart();
+        } catch (error) {
+            console.error("Soil history error:", error);
+            soilHistoryCache = [];
+            $("historyStatus").textContent = "Unable to load stored readings.";
+            $("historyTableBody").innerHTML = `<tr><td colspan="8" class="history-empty">Unable to retrieve soil history from the server.</td></tr>`;
+            if (soilHistoryChart) { soilHistoryChart.destroy(); soilHistoryChart = null; }
         }
     }
 
@@ -3102,6 +3329,8 @@ if (!MAPBOX_ACCESS_TOKEN) {
     document.querySelectorAll(".monitoring-subtab").forEach(button => {
         button.addEventListener("click", () => switchMonitoringPane(button.dataset.pane));
     });
+    $("historyRefreshButton").addEventListener("click", loadSoilHistory);
+    $("chartParameter").addEventListener("change", renderSoilHistoryChart);
 
 </script>
 
