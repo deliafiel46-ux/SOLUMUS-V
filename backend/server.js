@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 
+const weatherCache = new Map();
+const WEATHER_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getDatabase } = require("firebase-admin/database");
 
@@ -961,6 +963,19 @@ app.get("/api/weather", async (req, res) => {
             `&timezone=auto`;
 
         console.log("Requesting weather:", weatherUrl);
+        const cacheKey =
+    `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+
+const cachedWeather = weatherCache.get(cacheKey);
+
+if (
+    cachedWeather &&
+    Date.now() - cachedWeather.timestamp < WEATHER_CACHE_DURATION
+) {
+    console.log("Using cached weather data:", cacheKey);
+
+    return res.json(cachedWeather.data);
+}
 
         const response = await axios.get(weatherUrl, {
             timeout: 15000
@@ -980,29 +995,37 @@ app.get("/api/weather", async (req, res) => {
         }
 
         const weatherRisk = getWeatherRisk(
-            weather.current,
-            weather.daily
-        );
+    weather.current,
+    weather.daily
+);
 
-        res.json({
-            success: true,
+const weatherResponse = {
+    success: true,
 
-            location: {
-                latitude,
-                longitude
-            },
+    location: {
+        latitude,
+        longitude
+    },
 
-            current: {
-                ...weather.current,
-                condition: getWeatherCondition(
-                    weather.current.weather_code
-                )
-            },
+    current: {
+        ...weather.current,
+        condition: getWeatherCondition(
+            weather.current.weather_code
+        )
+    },
 
-            daily: weather.daily,
+    daily: weather.daily,
 
-            weatherRisk: weatherRisk
-        });
+    weatherRisk: weatherRisk
+};
+
+// Cache only successful weather responses.
+weatherCache.set(cacheKey, {
+    timestamp: Date.now(),
+    data: weatherResponse
+});
+
+res.json(weatherResponse);
 
     } catch (error) {
         console.error("Weather API error:", error);
