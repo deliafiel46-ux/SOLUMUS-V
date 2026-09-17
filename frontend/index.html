@@ -1527,11 +1527,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
     function initializeMap() {
         mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-        const saved = loadSavedLocation();
-
-        currentLocation = saved
-            ? saved
-            : { ...DEFAULT_LOCATION };
+        currentLocation = { ...DEFAULT_LOCATION };
 
         map = new mapboxgl.Map({
             container: "fieldMap",
