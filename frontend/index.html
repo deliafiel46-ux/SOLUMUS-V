@@ -412,6 +412,32 @@
             line-height: 1.5;
         }
 
+        .irrigation-risk-card {
+            margin-top: 17px;
+            padding: 15px;
+            border-radius: 13px;
+            background: #f7f9f7;
+            border: 1px solid var(--border);
+        }
+
+        .irrigation-risk-value {
+            margin-top: 5px;
+            font-size: 21px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .irrigation-risk-message {
+            margin: 7px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .irrigation-risk-low .irrigation-risk-value { color: var(--good); }
+        .irrigation-risk-moderate .irrigation-risk-value { color: #8a5900; }
+        .irrigation-risk-high .irrigation-risk-value { color: var(--danger); }
+
         .forecast {
             margin-top: 20px;
         }
@@ -1462,6 +1488,14 @@
             </div>
         </div>
 
+        <div class="irrigation-risk-card">
+            <div class="risk-label">IRRIGATION RISK</div>
+            <div id="sidebarIrrigationRisk" class="irrigation-risk-value">--</div>
+            <p id="sidebarIrrigationRiskMessage" class="irrigation-risk-message">
+                Waiting for the latest soil reading.
+            </p>
+        </div>
+
         <div class="weather-note">
             Weather information is environmental data obtained separately
             from the soil sensor. Use it together with actual field
@@ -1609,11 +1643,6 @@
                     <span class="parameter-unit">mg/kg</span>
                 </div>
 
-                <div class="parameter-card">
-                    <span>Irrigation Risk</span>
-                    <strong id="nodeIrrigationRisk">--</strong>
-                    <span class="parameter-unit">current assessment</span>
-                </div>
             </div>
         </div>
 
@@ -2262,18 +2291,73 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("nodePotassium").textContent =
             formatValue(potassium, 1);
 
-        const irrigationRisk =
-            firstValue(
-                latestSoilData.irrigationRisk,
-                latestSoilData.soilHealth?.irrigationRisk,
-                "—"
-            );
-
-        $("nodeIrrigationRisk").textContent =
-            String(irrigationRisk);
+        updateIrrigationRiskSidebar();
 
         $("nodeRecommendation").textContent =
             getRecommendationText();
+    }
+
+    function updateIrrigationRiskSidebar() {
+        const valueElement = $("sidebarIrrigationRisk");
+        const messageElement = $("sidebarIrrigationRiskMessage");
+        const card = valueElement?.closest(".irrigation-risk-card");
+
+        if (!valueElement || !messageElement) return;
+
+        let risk = firstValue(
+            latestSoilData?.irrigationRisk,
+            latestSoilData?.soilHealth?.irrigationRisk,
+            null
+        );
+
+        const moisture = Number(latestSoilData?.moisture);
+
+        // Use the backend assessment when available. If it is not returned,
+        // provide a transparent moisture-based fallback rather than showing
+        // fabricated sensor data.
+        if (!risk && Number.isFinite(moisture)) {
+            if (moisture < 30) {
+                risk = "HIGH";
+            } else if (moisture < 60) {
+                risk = "MODERATE";
+            } else {
+                risk = "LOW";
+            }
+        }
+
+        risk = risk ? String(risk).toUpperCase() : "NO DATA";
+        valueElement.textContent = risk;
+
+        if (card) {
+            card.classList.remove(
+                "irrigation-risk-low",
+                "irrigation-risk-moderate",
+                "irrigation-risk-high"
+            );
+            if (risk === "LOW") card.classList.add("irrigation-risk-low");
+            if (risk === "MODERATE") card.classList.add("irrigation-risk-moderate");
+            if (risk === "HIGH") card.classList.add("irrigation-risk-high");
+        }
+
+        if (!latestSoilData || !Number.isFinite(moisture)) {
+            messageElement.textContent =
+                "Waiting for the latest soil moisture reading.";
+            return;
+        }
+
+        if (risk === "HIGH") {
+            messageElement.textContent =
+                `Soil moisture is ${moisture.toFixed(1)}%. Irrigation may be needed; consider field conditions before applying water.`;
+        } else if (risk === "MODERATE") {
+            messageElement.textContent =
+                `Soil moisture is ${moisture.toFixed(1)}%. Check field conditions before irrigation.`;
+        } else if (risk === "LOW") {
+            messageElement.textContent =
+                `Soil moisture is ${moisture.toFixed(1)}%. Additional irrigation may not be necessary at this time.`;
+        } else {
+            messageElement.textContent =
+                "Irrigation risk assessment is not available.";
+        }
     }
 
     function formatValue(value, decimals = 1) {
@@ -2906,17 +2990,18 @@ if (!MAPBOX_ACCESS_TOKEN) {
             "No significant weather risks detected.";
 
         renderForecast(daily);
+        updateIrrigationRiskSidebar();
     }
 
     function renderForecast(daily) {
-        const dates = daily.time || [];
-        const codes = daily.weather_code || [];
-        const highs = daily.temperature_2m_max || [];
-        const lows = daily.temperature_2m_min || [];
+        const dates = (daily.time || []).slice(0, 3);
+        const codes = (daily.weather_code || []).slice(0, 3);
+        const highs = (daily.temperature_2m_max || []).slice(0, 3);
+        const lows = (daily.temperature_2m_min || []).slice(0, 3);
         const rainChance =
-            daily.precipitation_probability_max || [];
+            (daily.precipitation_probability_max || []).slice(0, 3);
         const rainfall =
-            daily.precipitation_sum || [];
+            (daily.precipitation_sum || []).slice(0, 3);
 
         if (!dates.length) {
             $("forecastContainer").innerHTML = `
@@ -3073,6 +3158,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
     loadSensorLocation();
     loadSoilData();
+    updateIrrigationRiskSidebar();
 
     if (currentLocation) {
         loadWeather(
