@@ -53,24 +53,43 @@ app.get("/api/status", (req, res) => {
 // FIREBASE TEST ENDPOINT
 // ==============================
 
-app.get("/api/firebase-test", async (req, res) => {
+// ==============================
+// GET CURRENT SOIL DATA
+// ==============================
+
+app.get("/api/soil-data", async (req, res) => {
     try {
-        await db.ref("system/test").set({
-            message: "Firebase connection successful",
-            timestamp: new Date().toISOString()
-        });
+        const snapshot = await db
+            .ref("soilData/current")
+            .once("value");
+
+        const data = snapshot.val();
+
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "No soil data available."
+            });
+        }
+
+        const soilHealth = calculateSoilHealth(data);
+        const recommendations = generateSoilRecommendations(data);
+        const irrigationRisk = calculateIrrigationRisk(data);
 
         res.json({
             success: true,
-            message: "Data successfully written to Firebase."
+            data: data,
+            soilHealth: soilHealth,
+            irrigationRisk: irrigationRisk,
+            recommendations: recommendations
         });
 
     } catch (error) {
-        console.error("Firebase error:", error);
+        console.error("Get soil data error:", error);
 
         res.status(500).json({
             success: false,
-            message: "Failed to connect to Firebase.",
+            message: "Failed to retrieve soil data.",
             error: error.message
         });
     }
@@ -175,6 +194,48 @@ app.get("/api/soil-data", async (req, res) => {
         }
 
         const soilHealth = calculateSoilHealth(data);
+        // ==============================
+// IRRIGATION RISK
+// ==============================
+
+function calculateIrrigationRisk(reading) {
+
+    const moisture = Number(reading.moisture);
+
+    // No valid moisture reading
+    if (!Number.isFinite(moisture)) {
+        return {
+            level: "UNAVAILABLE",
+            message:
+                "Irrigation risk cannot be assessed without a valid soil-moisture reading."
+        };
+    }
+
+    // Soil is too dry
+    if (moisture < SOIL_THRESHOLDS.moisture.low) {
+        return {
+            level: "HIGH",
+            message:
+                "Soil moisture is below the configured range. Irrigation may be needed, subject to crop stage and field conditions."
+        };
+    }
+
+    // Soil is too wet
+    if (moisture > SOIL_THRESHOLDS.moisture.high) {
+        return {
+            level: "HIGH",
+            message:
+                "Soil moisture is above the configured range. Avoid unnecessary irrigation and check field drainage."
+        };
+    }
+
+    // Soil moisture is within range
+    return {
+        level: "LOW",
+        message:
+            "Soil moisture is within the configured range. No immediate irrigation need is indicated by moisture alone."
+    };
+}
         const recommendations =
             generateSoilRecommendations(data);
 
