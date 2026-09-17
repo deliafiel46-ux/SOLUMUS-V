@@ -412,32 +412,6 @@
             line-height: 1.5;
         }
 
-        .irrigation-risk-card {
-            margin-top: 17px;
-            padding: 15px;
-            border-radius: 13px;
-            background: #f7f9f7;
-            border: 1px solid var(--border);
-        }
-
-        .irrigation-risk-value {
-            margin-top: 5px;
-            font-size: 21px;
-            font-weight: 900;
-            color: var(--primary);
-        }
-
-        .irrigation-risk-message {
-            margin: 7px 0 0;
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.5;
-        }
-
-        .irrigation-risk-low .irrigation-risk-value { color: var(--good); }
-        .irrigation-risk-moderate .irrigation-risk-value { color: #8a5900; }
-        .irrigation-risk-high .irrigation-risk-value { color: var(--danger); }
-
         .forecast {
             margin-top: 20px;
         }
@@ -1150,7 +1124,7 @@
 
 
         /* =========================================================
-           MAIN VIEW + SOIL MONITORING TABS
+           MAIN NAVIGATION + SOIL MONITORING
         ========================================================= */
         .page-nav {
             display: flex;
@@ -1158,6 +1132,7 @@
             margin-bottom: 14px;
             border-bottom: 1px solid var(--border);
         }
+
         .page-nav-button {
             border: none;
             background: transparent;
@@ -1169,93 +1144,122 @@
             letter-spacing: .5px;
             cursor: pointer;
         }
+
         .page-nav-button:hover { background: var(--soft); color: var(--primary); }
         .page-nav-button.active {
             background: var(--surface);
             color: var(--primary);
             box-shadow: 0 -2px 0 var(--primary) inset;
         }
-        .main-view { display: none; }
-        .main-view.active { display: block; }
-        .monitoring-header { margin: 0 0 14px; }
-        .monitoring-header h1 { margin: 3px 0 4px; font-size: 25px; }
-        .monitoring-header p { margin: 0; color: var(--muted); font-size: 12px; }
+
+        .monitoring-view { display: none; }
+        .monitoring-view.active { display: block; }
+
+        .monitoring-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin: 0 0 14px;
+        }
+
+        .monitoring-title h1 { margin: 0; font-size: 25px; }
+        .monitoring-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+
         .sensor-tabs {
-            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 3px; margin-bottom: 14px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 3px;
+            margin-bottom: 14px;
         }
+
         .sensor-tab {
-            flex: 0 0 auto; border: 1px solid var(--border); background: var(--surface);
-            color: var(--muted); padding: 10px 14px; border-radius: 10px;
-            font-size: 11px; font-weight: 800; cursor: pointer;
+            flex: 0 0 auto;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
         }
-        .sensor-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+        .sensor-tab.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
         .monitoring-content {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-            padding: 18px; box-shadow: var(--shadow);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow);
         }
+
         .monitoring-subtabs {
-            display: flex; gap: 5px; flex-wrap: wrap; border-bottom: 1px solid var(--border);
-            margin-bottom: 18px; padding-bottom: 8px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 18px;
+            padding-bottom: 8px;
         }
+
         .monitoring-subtab {
-            border: none; background: transparent; color: var(--muted); padding: 8px 11px;
-            border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            padding: 8px 11px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
         }
+
         .monitoring-subtab.active { background: var(--soft); color: var(--primary); }
         .monitoring-pane { display: none; }
         .monitoring-pane.active { display: block; }
-        .live-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
-        .live-card { padding: 14px; background: var(--soft); border: 1px solid var(--border); border-radius: 12px; }
+
+        .monitoring-placeholder {
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            background: var(--soft);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .live-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .live-card {
+            padding: 14px;
+            background: var(--soft);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
         .live-card span { display:block; color:var(--muted); font-size:10px; font-weight:700; }
         .live-card strong { display:block; margin-top:5px; font-size:22px; }
         .live-card small { color:var(--muted); font-size:10px; }
-        .monitoring-placeholder {
-            min-height: 220px; display:flex; align-items:center; justify-content:center; text-align:center;
-            color:var(--muted); font-size:12px; background:var(--soft); border:1px dashed var(--border);
-            border-radius:12px; padding:25px;
-        }
-        .monitoring-message { width:100%; }
-        .recommendation-list { width:100%; text-align:left; margin:0; padding-left:20px; }
-        .recommendation-list li { margin:7px 0; }
 
-        .history-toolbar {
-            display:flex; align-items:center; justify-content:space-between; gap:12px;
-            margin-bottom:12px; flex-wrap:wrap;
-        }
-        .history-status { color:var(--muted); font-size:11px; }
-        .history-table-wrap {
-            overflow:auto; border:1px solid var(--border); border-radius:12px;
-            background:var(--surface);
-        }
-        .history-table { width:100%; border-collapse:collapse; min-width:980px; }
-        .history-table th, .history-table td {
-            padding:10px 11px; border-bottom:1px solid var(--border);
-            text-align:left; white-space:nowrap; font-size:10px;
-        }
-        .history-table th { background:var(--soft); color:var(--primary); font-weight:800; }
-        .history-table tbody tr:last-child td { border-bottom:none; }
-        .history-empty { padding:28px; text-align:center; color:var(--muted); font-size:12px; }
-        .chart-toolbar {
-            display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;
-        }
-        .chart-select {
-            border:1px solid var(--border); background:var(--surface); color:var(--text);
-            border-radius:9px; padding:9px 11px; font-size:11px; font-weight:700;
-        }
-        .chart-wrap {
-            position:relative; height:360px; padding:14px;
-            background:var(--soft); border:1px solid var(--border); border-radius:12px;
-        }
-        .chart-note { color:var(--muted); font-size:10px; margin-top:9px; }
-        .history-refresh {
-            border:1px solid var(--border); background:var(--surface); color:var(--primary);
-            border-radius:9px; padding:8px 11px; font-size:10px; font-weight:800; cursor:pointer;
-        }
-        .history-refresh:hover { background:var(--soft); }
-        @media (max-width:760px) {
-            .page-nav-button { padding:10px 12px; }
-            .live-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-            .monitoring-content { padding:13px; }
+        @media (max-width: 760px) {
+            .page-nav-button { padding: 10px 12px; }
+            .monitoring-header { align-items: flex-start; flex-direction: column; }
+            .live-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .monitoring-content { padding: 13px; }
         }
     </style>
 </head>
@@ -1286,12 +1290,12 @@
 </header>
 
 <main>
-    <nav class="page-nav" aria-label="SOLUMUS-V views">
+    <nav class="page-nav" aria-label="SOLUMUS-V monitoring views">
         <button id="fieldMonitoringTab" class="page-nav-button active" type="button">FIELD MONITORING</button>
         <button id="soilMonitoringTab" class="page-nav-button" type="button">SOIL MONITORING</button>
     </nav>
 
-    <section id="fieldMonitoringView" class="main-view active">
+    <section id="fieldMonitoringView" class="monitoring-view active" aria-label="Field monitoring">
         <div class="page-heading">
             <span class="eyebrow">FIELD MONITORING</span>
             <p>Select a sensor location to view its current soil condition.</p>
@@ -1342,11 +1346,13 @@
         </div>
     </section>
 
-    <section id="soilMonitoringView" class="main-view">
+    <section id="soilMonitoringView" class="monitoring-view" aria-label="Soil monitoring">
         <div class="monitoring-header">
-            <span class="eyebrow">SOIL MONITORING</span>
-            <h1>Sensor Data Monitoring</h1>
-            <p>Select a sensor node, then view its live data, history, charts, or recommendations.</p>
+            <div class="monitoring-title">
+                <span class="eyebrow">SOIL MONITORING</span>
+                <h1>Sensor Data Monitoring</h1>
+                <p>Select a sensor node, then view its live data, history, charts, or recommendations.</p>
+            </div>
         </div>
 
         <div class="sensor-tabs" role="tablist" aria-label="Sensor nodes">
@@ -1364,67 +1370,24 @@
             </div>
 
             <div id="monitorPaneLive" class="monitoring-pane active">
-                <div id="liveMonitoringMessage" class="monitoring-message">
-                    <div class="live-grid">
-                        <div class="live-card"><span>MOISTURE</span><strong id="monitorMoisture">--</strong><small>%</small></div>
-                        <div class="live-card"><span>TEMPERATURE</span><strong id="monitorTemperature">--</strong><small>°C</small></div>
-                        <div class="live-card"><span>pH</span><strong id="monitorPH">--</strong><small>pH</small></div>
-                        <div class="live-card"><span>EC</span><strong id="monitorEC">--</strong><small>µS/cm</small></div>
-                        <div class="live-card"><span>NITROGEN</span><strong id="monitorNitrogen">--</strong><small>mg/kg</small></div>
-                        <div class="live-card"><span>PHOSPHORUS</span><strong id="monitorPhosphorus">--</strong><small>mg/kg</small></div>
-                        <div class="live-card"><span>POTASSIUM</span><strong id="monitorPotassium">--</strong><small>mg/kg</small></div>
-                        <div class="live-card"><span>SOIL HEALTH</span><strong id="monitorHealth">--</strong><small id="monitorHealthLevel">Waiting for data</small></div>
-                    </div>
+                <div class="live-grid">
+                    <div class="live-card"><span>MOISTURE</span><strong id="monitorMoisture">--</strong><small>%</small></div>
+                    <div class="live-card"><span>TEMPERATURE</span><strong id="monitorTemperature">--</strong><small>°C</small></div>
+                    <div class="live-card"><span>pH</span><strong id="monitorPH">--</strong><small>pH</small></div>
+                    <div class="live-card"><span>EC</span><strong id="monitorEC">--</strong><small>µS/cm</small></div>
+                    <div class="live-card"><span>NITROGEN</span><strong id="monitorNitrogen">--</strong><small>mg/kg</small></div>
+                    <div class="live-card"><span>PHOSPHORUS</span><strong id="monitorPhosphorus">--</strong><small>mg/kg</small></div>
+                    <div class="live-card"><span>POTASSIUM</span><strong id="monitorPotassium">--</strong><small>mg/kg</small></div>
+                    <div class="live-card"><span>SOIL HEALTH</span><strong id="monitorHealth">--</strong><small id="monitorHealthLevel">Waiting for data</small></div>
                 </div>
             </div>
 
             <div id="monitorPaneHistory" class="monitoring-pane">
-                <div class="history-toolbar">
-                    <div>
-                        <strong id="historySensorName">SOLUMUS-V-01</strong>
-                        <div id="historyStatus" class="history-status">Loading stored readings...</div>
-                    </div>
-                    <button id="historyRefreshButton" class="history-refresh" type="button">REFRESH HISTORY</button>
-                </div>
-                <div class="history-table-wrap">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>DATE / TIME</th>
-                                <th>MOISTURE</th>
-                                <th>TEMPERATURE</th>
-                                <th>pH</th>
-                                <th>EC</th>
-                                <th>NITROGEN</th>
-                                <th>PHOSPHORUS</th>
-                                <th>POTASSIUM</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            <tr><td colspan="8" class="history-empty">Loading stored readings...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <div class="monitoring-placeholder">Soil history for <strong id="historySensorName">SOLUMUS-V-01</strong> will appear here from the stored sensor records.</div>
             </div>
 
             <div id="monitorPaneCharts" class="monitoring-pane">
-                <div class="chart-toolbar">
-                    <strong id="chartsSensorName">SOLUMUS-V-01</strong>
-                    <label for="chartParameter">Parameter:</label>
-                    <select id="chartParameter" class="chart-select">
-                        <option value="moisture">Moisture (%)</option>
-                        <option value="temperature">Temperature (°C)</option>
-                        <option value="ph">pH</option>
-                        <option value="ec">Electrical Conductivity (µS/cm)</option>
-                        <option value="nitrogen">Nitrogen (mg/kg)</option>
-                        <option value="phosphorus">Phosphorus (mg/kg)</option>
-                        <option value="potassium">Potassium (mg/kg)</option>
-                    </select>
-                </div>
-                <div class="chart-wrap">
-                    <canvas id="soilHistoryChart"></canvas>
-                </div>
-                <div class="chart-note">The chart uses the stored soil readings retrieved from SOLUMUS-V's history endpoint.</div>
+                <div class="monitoring-placeholder">Charts for <strong id="chartsSensorName">SOLUMUS-V-01</strong> will use the sensor's historical readings.</div>
             </div>
 
             <div id="monitorPaneRecommendations" class="monitoring-pane">
@@ -1488,11 +1451,11 @@
             </div>
         </div>
 
-        <div class="irrigation-risk-card">
+        <div class="weather-risk" style="margin-top:17px;">
             <div class="risk-label">IRRIGATION RISK</div>
-            <div id="sidebarIrrigationRisk" class="irrigation-risk-value">--</div>
-            <p id="sidebarIrrigationRiskMessage" class="irrigation-risk-message">
-                Waiting for the latest soil reading.
+            <div id="sidebarIrrigationRisk">--</div>
+            <p id="sidebarIrrigationMessage">
+                Waiting for soil and weather data...
             </p>
         </div>
 
@@ -1643,6 +1606,11 @@
                     <span class="parameter-unit">mg/kg</span>
                 </div>
 
+                <div class="parameter-card">
+                    <span>Irrigation Risk</span>
+                    <strong id="nodeIrrigationRisk">--</strong>
+                    <span class="parameter-unit">current assessment</span>
+                </div>
             </div>
         </div>
 
@@ -1657,7 +1625,6 @@
 
 <!-- Mapbox GL JS -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.30.0/mapbox-gl.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     /* =========================================================
@@ -1768,7 +1735,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
         map = new mapboxgl.Map({
     container: "fieldMap",
 
-    style: "mapbox://styles/mapbox/standard",
+    style: "mapbox://styles/mapbox/standard-satellite",
 
     center: [
         currentLocation.longitude,
@@ -1784,13 +1751,13 @@ if (!MAPBOX_ACCESS_TOKEN) {
     cooperativeGestures: true,
 
     config: {
-        basemap: {
-            showPlaceLabels: true,
-            showRoadLabels: true,
-            showPointOfInterestLabels: true,
-            lightPreset: "day"
-        }
+    basemap: {
+        showPlaceLabels: true,
+        showRoadLabels: true,
+        showPointOfInterestLabels: true,
+        lightPreset: "day"
     }
+}
         });
 
         map.addControl(
@@ -2196,6 +2163,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
             updateNodeInterface();
             refreshNodeVisuals();
+            updateIrrigationRiskSidebar();
 
         } catch (error) {
             console.error(
@@ -2291,73 +2259,18 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("nodePotassium").textContent =
             formatValue(potassium, 1);
 
-        updateIrrigationRiskSidebar();
+        const irrigationRisk =
+            firstValue(
+                latestSoilData.irrigationRisk,
+                latestSoilData.soilHealth?.irrigationRisk,
+                "—"
+            );
+
+        $("nodeIrrigationRisk").textContent =
+            String(irrigationRisk);
 
         $("nodeRecommendation").textContent =
             getRecommendationText();
-    }
-
-    function updateIrrigationRiskSidebar() {
-        const valueElement = $("sidebarIrrigationRisk");
-        const messageElement = $("sidebarIrrigationRiskMessage");
-        const card = valueElement?.closest(".irrigation-risk-card");
-
-        if (!valueElement || !messageElement) return;
-
-        let risk = firstValue(
-            latestSoilData?.irrigationRisk,
-            latestSoilData?.soilHealth?.irrigationRisk,
-            null
-        );
-
-        const moisture = Number(latestSoilData?.moisture);
-
-        // Use the backend assessment when available. If it is not returned,
-        // provide a transparent moisture-based fallback rather than showing
-        // fabricated sensor data.
-        if (!risk && Number.isFinite(moisture)) {
-            if (moisture < 30) {
-                risk = "HIGH";
-            } else if (moisture < 60) {
-                risk = "MODERATE";
-            } else {
-                risk = "LOW";
-            }
-        }
-
-        risk = risk ? String(risk).toUpperCase() : "NO DATA";
-        valueElement.textContent = risk;
-
-        if (card) {
-            card.classList.remove(
-                "irrigation-risk-low",
-                "irrigation-risk-moderate",
-                "irrigation-risk-high"
-            );
-            if (risk === "LOW") card.classList.add("irrigation-risk-low");
-            if (risk === "MODERATE") card.classList.add("irrigation-risk-moderate");
-            if (risk === "HIGH") card.classList.add("irrigation-risk-high");
-        }
-
-        if (!latestSoilData || !Number.isFinite(moisture)) {
-            messageElement.textContent =
-                "Waiting for the latest soil moisture reading.";
-            return;
-        }
-
-        if (risk === "HIGH") {
-            messageElement.textContent =
-                `Soil moisture is ${moisture.toFixed(1)}%. Irrigation may be needed; consider field conditions before applying water.`;
-        } else if (risk === "MODERATE") {
-            messageElement.textContent =
-                `Soil moisture is ${moisture.toFixed(1)}%. Check field conditions before irrigation.`;
-        } else if (risk === "LOW") {
-            messageElement.textContent =
-                `Soil moisture is ${moisture.toFixed(1)}%. Additional irrigation may not be necessary at this time.`;
-        } else {
-            messageElement.textContent =
-                "Irrigation risk assessment is not available.";
-        }
     }
 
     function formatValue(value, decimals = 1) {
@@ -2855,54 +2768,191 @@ if (!MAPBOX_ACCESS_TOKEN) {
     ========================================================= */
 
     async function loadWeather(latitude, longitude) {
-        if (
-            !Number.isFinite(Number(latitude)) ||
-            !Number.isFinite(Number(longitude))
-        ) {
+        const lat = Number(latitude);
+        const lon = Number(longitude);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            console.warn("SOLUMUS-V: Invalid weather coordinates.", latitude, longitude);
             return;
         }
 
+        // Show the monitoring location immediately, even while the API is loading.
+        $("weatherLocation").textContent =
+            `Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`;
+
+        $("weatherCondition").textContent = "Loading weather...";
+        $("weatherTemperature").textContent = "-- °C";
+        $("weatherHumidity").textContent = "-- %";
+        $("weatherRain").textContent = "-- mm";
+        $("weatherWind").textContent = "-- km/h";
+        $("weatherRisk").textContent = "--";
+        $("weatherRiskMessage").textContent = "Retrieving current weather conditions...";
+        $("forecastContainer").innerHTML = `
+            <div class="forecast-card">
+                Loading 3-day forecast...
+            </div>
+        `;
+        $("sidebarIrrigationRisk").textContent = "--";
+        $("sidebarIrrigationMessage").textContent =
+            "Waiting for soil and weather data...";
+
         try {
-            const response = await fetch(
-                `${API_URL}/api/weather?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`,
-                {
-                    cache: "no-store"
+            /*
+             * Weather is loaded directly from Open-Meteo.
+             * Soil data continues to come from the SOLUMUS-V backend.
+             */
+            const params = new URLSearchParams({
+                latitude: lat.toString(),
+                longitude: lon.toString(),
+                current:
+                    "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
+                daily:
+                    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max",
+                forecast_days: "3",
+                wind_speed_unit: "kmh",
+                timezone: "auto"
+            });
+
+            const weatherUrl =
+                `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+
+            console.log("SOLUMUS-V WEATHER REQUEST:", weatherUrl);
+
+            const response = await fetch(weatherUrl, {
+                method: "GET",
+                mode: "cors",
+                cache: "no-store",
+                headers: {
+                    "Accept": "application/json"
                 }
-            );
+            });
 
             if (!response.ok) {
-                throw new Error(
-                    `Weather HTTP ${response.status}`
-                );
+                throw new Error(`Open-Meteo HTTP ${response.status}`);
             }
 
             const data = await response.json();
 
-            renderWeather(data);
+            if (!data.current || !data.daily) {
+                throw new Error("Open-Meteo returned incomplete weather data.");
+            }
+
+            console.log("SOLUMUS-V WEATHER RESPONSE:", data);
+
+            const currentCode = Number(data.current.weather_code);
+            const probabilities = Array.isArray(
+                data.daily.precipitation_probability_max
+            )
+                ? data.daily.precipitation_probability_max
+                    .map(Number)
+                    .filter(Number.isFinite)
+                : [];
+
+            const rainProb = probabilities.length
+                ? Math.max(...probabilities)
+                : 0;
+
+            const currentPrecip =
+                Number(data.current.precipitation) || 0;
+
+            const currentTemp =
+                Number(data.current.temperature_2m);
+
+            const risks = [];
+
+            if (rainProb >= 70 || currentPrecip >= 10) {
+                risks.push({
+                    type: "rain",
+                    level: "HIGH",
+                    message:
+                        "High chance of rainfall. Consider delaying field activities."
+                });
+            } else if (rainProb >= 40 || currentPrecip > 0) {
+                risks.push({
+                    type: "rain",
+                    level: "MODERATE",
+                    message:
+                        "Moderate chance of rainfall. Monitor weather conditions before field activities."
+                });
+            }
+
+            if (currentTemp >= 35) {
+                risks.push({
+                    type: "heat",
+                    level: "HIGH",
+                    message:
+                        "High temperature conditions detected. Consider heat stress and water requirements."
+                });
+            } else if (currentTemp >= 32) {
+                risks.push({
+                    type: "heat",
+                    level: "MODERATE",
+                    message:
+                        "Elevated temperature conditions detected. Monitor crop water requirements."
+                });
+            }
+
+            if ([95, 96, 99].includes(currentCode)) {
+                risks.push({
+                    type: "thunderstorm",
+                    level: "HIGH",
+                    message:
+                        "Thunderstorm conditions detected. Exercise caution during outdoor field activities."
+                });
+            }
+
+            const overall = risks.some(r => r.level === "HIGH")
+                ? "HIGH"
+                : risks.some(r => r.level === "MODERATE")
+                    ? "MODERATE"
+                    : "LOW";
+
+            renderWeather({
+                success: true,
+                location: {
+                    latitude: lat,
+                    longitude: lon
+                },
+                current: data.current,
+                daily: data.daily,
+                weatherRisk: {
+                    overall,
+                    risks,
+                    condition: weatherCodeLabel(currentCode),
+                    rainProbability: rainProb
+                }
+            });
+
+            updateIrrigationRiskSidebar({
+                rainProbability: rainProb,
+                currentPrecipitation: currentPrecip
+            });
 
         } catch (error) {
-            console.error(
-                "Weather error:",
-                error
-            );
+            console.error("SOLUMUS-V weather error:", error);
 
             $("weatherCondition").textContent =
                 "Weather unavailable";
-
             $("weatherTemperature").textContent =
                 "-- °C";
-
+            $("weatherHumidity").textContent =
+                "-- %";
+            $("weatherRain").textContent =
+                "-- mm";
+            $("weatherWind").textContent =
+                "-- km/h";
             $("weatherRisk").textContent =
-                "--";
-
+                "UNAVAILABLE";
             $("weatherRiskMessage").textContent =
-                "Unable to retrieve weather data.";
-
+                "Weather data could not be retrieved from Open-Meteo.";
             $("forecastContainer").innerHTML = `
                 <div class="forecast-card">
                     Weather data could not be loaded.
                 </div>
             `;
+            $("sidebarIrrigationRisk").textContent = "UNAVAILABLE";
+            $("sidebarIrrigationMessage").textContent =
+                "Irrigation assessment requires current weather data.";
         }
     }
 
@@ -2990,18 +3040,17 @@ if (!MAPBOX_ACCESS_TOKEN) {
             "No significant weather risks detected.";
 
         renderForecast(daily);
-        updateIrrigationRiskSidebar();
     }
 
     function renderForecast(daily) {
-        const dates = (daily.time || []).slice(0, 3);
-        const codes = (daily.weather_code || []).slice(0, 3);
-        const highs = (daily.temperature_2m_max || []).slice(0, 3);
-        const lows = (daily.temperature_2m_min || []).slice(0, 3);
+        const dates = daily.time || [];
+        const codes = daily.weather_code || [];
+        const highs = daily.temperature_2m_max || [];
+        const lows = daily.temperature_2m_min || [];
         const rainChance =
-            (daily.precipitation_probability_max || []).slice(0, 3);
+            daily.precipitation_probability_max || [];
         const rainfall =
-            (daily.precipitation_sum || []).slice(0, 3);
+            daily.precipitation_sum || [];
 
         if (!dates.length) {
             $("forecastContainer").innerHTML = `
@@ -3054,6 +3103,65 @@ if (!MAPBOX_ACCESS_TOKEN) {
             }).join("");
     }
 
+    function updateIrrigationRiskSidebar(weatherContext = {}) {
+        const moisture = Number(latestSoilData?.moisture);
+        const rainProbability = Number(weatherContext.rainProbability);
+
+        let risk = "MODERATE";
+        let message =
+            "Monitor soil moisture and forecast rainfall before irrigation.";
+
+        /*
+         * This is a simple decision-support indicator based on the
+         * currently available soil moisture and weather forecast.
+         * It is not a scientifically validated irrigation model.
+         */
+        if (Number.isFinite(moisture)) {
+            if (
+                moisture < 30 &&
+                (!Number.isFinite(rainProbability) || rainProbability < 40)
+            ) {
+                risk = "HIGH";
+                message =
+                    `Soil moisture is low (${moisture.toFixed(1)}%). ` +
+                    "Irrigation may be needed if field conditions confirm water stress.";
+            } else if (
+                moisture < 60 &&
+                (!Number.isFinite(rainProbability) || rainProbability < 70)
+            ) {
+                risk = "MODERATE";
+                message =
+                    `Soil moisture is ${moisture.toFixed(1)}%. ` +
+                    "Monitor the field and forecast before irrigating.";
+            } else {
+                risk = "LOW";
+                message =
+                    `Soil moisture is ${moisture.toFixed(1)}%. ` +
+                    "Immediate irrigation demand is not indicated by the current readings.";
+            }
+        } else if (Number.isFinite(rainProbability)) {
+            if (rainProbability >= 70) {
+                risk = "LOW";
+                message =
+                    `Rain probability is ${rainProbability}%. ` +
+                    "Consider postponing irrigation and checking field drainage.";
+            } else if (rainProbability >= 40) {
+                risk = "MODERATE";
+                message =
+                    `Rain probability is ${rainProbability}%. ` +
+                    "Monitor conditions before irrigating.";
+            } else {
+                risk = "HIGH";
+                message =
+                    `Rain probability is only ${rainProbability}%. ` +
+                    "Check soil moisture before deciding on irrigation.";
+            }
+        }
+
+        $("sidebarIrrigationRisk").textContent = risk;
+        $("sidebarIrrigationMessage").textContent = message;
+    }
+
     function openWeatherSidebar() {
         $("weatherSidebar").classList.add("open");
         $("weatherSidebar").setAttribute(
@@ -3066,6 +3174,9 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 currentLocation.latitude,
                 currentLocation.longitude
             );
+        } else {
+            $("weatherCondition").textContent = "Loading location...";
+            loadSensorLocation();
         }
     }
 
@@ -3158,14 +3269,6 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
     loadSensorLocation();
     loadSoilData();
-    updateIrrigationRiskSidebar();
-
-    if (currentLocation) {
-        loadWeather(
-            currentLocation.latitude,
-            currentLocation.longitude
-        );
-    }
 
     setInterval(
         loadSoilData,
@@ -3188,30 +3291,24 @@ if (!MAPBOX_ACCESS_TOKEN) {
        MAIN VIEW / SOIL MONITORING TABS
     ========================================================= */
     let selectedMonitoringSensor = NODE_ID;
-    let soilHistoryCache = [];
-    let soilHistoryChart = null;
-
-    const CHART_PARAMETERS = {
-        moisture: { label: "Soil Moisture", unit: "%", decimals: 1 },
-        temperature: { label: "Soil Temperature", unit: "°C", decimals: 1 },
-        ph: { label: "Soil pH", unit: "pH", decimals: 2 },
-        ec: { label: "Electrical Conductivity", unit: "µS/cm", decimals: 0 },
-        nitrogen: { label: "Nitrogen", unit: "mg/kg", decimals: 0 },
-        phosphorus: { label: "Phosphorus", unit: "mg/kg", decimals: 0 },
-        potassium: { label: "Potassium", unit: "mg/kg", decimals: 0 }
-    };
 
     function switchMainView(view) {
+        const fieldView = $("fieldMonitoringView");
+        const soilView = $("soilMonitoringView");
+        const fieldTab = $("fieldMonitoringTab");
+        const soilTab = $("soilMonitoringTab");
+
         const isSoil = view === "soil";
-        $("fieldMonitoringView").classList.toggle("active", !isSoil);
-        $("soilMonitoringView").classList.toggle("active", isSoil);
-        $("fieldMonitoringTab").classList.toggle("active", !isSoil);
-        $("soilMonitoringTab").classList.toggle("active", isSoil);
+        fieldView.classList.toggle("active", !isSoil);
+        soilView.classList.toggle("active", isSoil);
+        fieldTab.classList.toggle("active", !isSoil);
+        soilTab.classList.toggle("active", isSoil);
+
         if (isSoil) {
             loadMonitoringLiveData();
-            loadSoilHistory();
+        } else if (map) {
+            setTimeout(() => map.resize(), 50);
         }
-        if (!isSoil && map) setTimeout(() => map.resize(), 50);
     }
 
     function selectMonitoringSensor(sensorId) {
@@ -3222,7 +3319,6 @@ if (!MAPBOX_ACCESS_TOKEN) {
         $("historySensorName").textContent = sensorId;
         $("chartsSensorName").textContent = sensorId;
         loadMonitoringLiveData();
-        loadSoilHistory();
     }
 
     function switchMonitoringPane(pane) {
@@ -3232,39 +3328,15 @@ if (!MAPBOX_ACCESS_TOKEN) {
         document.querySelectorAll(".monitoring-pane").forEach(panel => panel.classList.remove("active"));
         const panel = $("monitorPane" + pane.charAt(0).toUpperCase() + pane.slice(1));
         if (panel) panel.classList.add("active");
-
-        if (pane === "history" || pane === "charts") {
-            loadSoilHistory();
-        }
-    }
-
-    function setMonitoringUnavailable() {
-        $("monitorMoisture").textContent = "--";
-        $("monitorTemperature").textContent = "--";
-        $("monitorPH").textContent = "--";
-        $("monitorEC").textContent = "--";
-        $("monitorNitrogen").textContent = "--";
-        $("monitorPhosphorus").textContent = "--";
-        $("monitorPotassium").textContent = "--";
-        $("monitorHealth").textContent = "--";
-        $("monitorHealthLevel").textContent = "Not registered";
     }
 
     async function loadMonitoringLiveData() {
-        if (selectedMonitoringSensor !== NODE_ID) {
-            setMonitoringUnavailable();
-            $("monitorRecommendations").innerHTML =
-                `<div class="monitoring-message">${escapeHTML(selectedMonitoringSensor)} is not registered with the current backend.</div>`;
-            return;
-        }
-
         try {
-            const response = await fetch(`${API_URL}/api/soil-data`, { cache: "no-store" });
+            const response = await fetch(`${API_URL}/api/soil-data?nodeId=${encodeURIComponent(selectedMonitoringSensor)}`, { cache: "no-store" });
             const payload = await response.json();
-            if (!response.ok || !payload.success) throw new Error(payload.message || `HTTP ${response.status}`);
-
             const data = payload.data || {};
             const health = payload.soilHealth || {};
+
             $("monitorMoisture").textContent = formatValue(data.moisture, 1);
             $("monitorTemperature").textContent = formatValue(data.temperature, 1);
             $("monitorPH").textContent = formatValue(data.ph, 2);
@@ -3275,148 +3347,30 @@ if (!MAPBOX_ACCESS_TOKEN) {
             $("monitorHealth").textContent = health.score ?? "--";
             $("monitorHealthLevel").textContent = health.level || "No classification";
 
-            const recommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
+            const recommendations = Array.isArray(payload.recommendations)
+                ? payload.recommendations
+                : (Array.isArray(data.recommendations) ? data.recommendations : []);
+
             $("monitorRecommendations").innerHTML = recommendations.length
-                ? `<div class="monitoring-message"><strong>${escapeHTML(selectedMonitoringSensor)}</strong><ul class="recommendation-list">${recommendations.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul></div>`
-                : "No recommendations available.";
+                ? `<div style="width:100%;text-align:left"><strong>${escapeHTML(selectedMonitoringSensor)}</strong><ul style="margin:10px 0 0;padding-left:20px">${recommendations.map(item => `<li style="margin:7px 0">${escapeHTML(item)}</li>`).join("")}</ul></div>`
+                : `No recommendations available for ${escapeHTML(selectedMonitoringSensor)}.`;
         } catch (error) {
             console.error("Soil monitoring error:", error);
             $("monitorRecommendations").textContent = "Unable to load monitoring data.";
         }
     }
 
-    function formatHistoryTimestamp(timestamp) {
-        if (!timestamp) return "--";
-        const date = new Date(timestamp);
-        if (Number.isNaN(date.getTime())) return String(timestamp);
-        return date.toLocaleString("en-PH", {
-            year: "numeric", month: "short", day: "2-digit",
-            hour: "2-digit", minute: "2-digit", second: "2-digit",
-            hour12: true
-        });
-    }
-
-    function renderSoilHistory() {
-        const body = $("historyTableBody");
-        if (!soilHistoryCache.length) {
-            body.innerHTML = `<tr><td colspan="8" class="history-empty">No stored readings available for ${escapeHTML(selectedMonitoringSensor)}.</td></tr>`;
-            $("historyStatus").textContent = "0 stored readings";
-            return;
-        }
-
-        body.innerHTML = soilHistoryCache.slice().reverse().map(reading => `
-            <tr>
-                <td>${escapeHTML(formatHistoryTimestamp(reading.timestamp))}</td>
-                <td>${escapeHTML(formatValue(reading.moisture, 1))} %</td>
-                <td>${escapeHTML(formatValue(reading.temperature, 1))} °C</td>
-                <td>${escapeHTML(formatValue(reading.ph, 2))}</td>
-                <td>${escapeHTML(formatValue(reading.ec, 0))} µS/cm</td>
-                <td>${escapeHTML(formatValue(reading.nitrogen, 0))} mg/kg</td>
-                <td>${escapeHTML(formatValue(reading.phosphorus, 0))} mg/kg</td>
-                <td>${escapeHTML(formatValue(reading.potassium, 0))} mg/kg</td>
-            </tr>
-        `).join("");
-
-        $("historyStatus").textContent = `${soilHistoryCache.length} stored reading(s) · latest shown first`;
-    }
-
-    function renderSoilHistoryChart() {
-        const canvas = $("soilHistoryChart");
-        if (!canvas) return;
-
-        if (soilHistoryChart) {
-            soilHistoryChart.destroy();
-            soilHistoryChart = null;
-        }
-
-        if (!soilHistoryCache.length) return;
-
-        const parameter = $("chartParameter").value;
-        const config = CHART_PARAMETERS[parameter];
-        const labels = soilHistoryCache.map(reading => formatHistoryTimestamp(reading.timestamp));
-        const values = soilHistoryCache.map(reading => Number(reading[parameter])).map(value => Number.isFinite(value) ? value : null);
-
-        soilHistoryChart = new Chart(canvas, {
-            type: "line",
-            data: {
-                labels,
-                datasets: [{
-                    label: `${config.label} (${config.unit})`,
-                    data: values,
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    pointHoverRadius: 5,
-                    tension: 0.25,
-                    fill: false
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: "index", intersect: false },
-                plugins: {
-                    legend: { display: true },
-                    tooltip: {
-                        callbacks: {
-                            label: context => {
-                                const value = context.parsed.y;
-                                return `${config.label}: ${Number.isFinite(value) ? value.toFixed(config.decimals) : "--"} ${config.unit}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { maxRotation: 45, minRotation: 0, autoSkip: true, maxTicksLimit: 10 },
-                        title: { display: true, text: "Recorded time" }
-                    },
-                    y: {
-                        title: { display: true, text: config.unit }
-                    }
-                }
-            }
-        });
-    }
-
-    async function loadSoilHistory() {
-        if (selectedMonitoringSensor !== NODE_ID) {
-            soilHistoryCache = [];
-            renderSoilHistory();
-            if (soilHistoryChart) { soilHistoryChart.destroy(); soilHistoryChart = null; }
-            return;
-        }
-
-        try {
-            $("historyStatus").textContent = "Loading stored readings...";
-            const response = await fetch(`${API_URL}/api/soil-history/recent`, { cache: "no-store" });
-            const payload = await response.json();
-            if (!response.ok || !payload.success) throw new Error(payload.message || `HTTP ${response.status}`);
-
-            soilHistoryCache = Array.isArray(payload.readings)
-                ? payload.readings.filter(reading => reading && reading.timestamp)
-                : [];
-
-            renderSoilHistory();
-            renderSoilHistoryChart();
-        } catch (error) {
-            console.error("Soil history error:", error);
-            soilHistoryCache = [];
-            $("historyStatus").textContent = "Unable to load stored readings.";
-            $("historyTableBody").innerHTML = `<tr><td colspan="8" class="history-empty">Unable to retrieve soil history from the server.</td></tr>`;
-            if (soilHistoryChart) { soilHistoryChart.destroy(); soilHistoryChart = null; }
-        }
-    }
 
     $("fieldMonitoringTab").addEventListener("click", () => switchMainView("field"));
     $("soilMonitoringTab").addEventListener("click", () => switchMainView("soil"));
+
     document.querySelectorAll(".sensor-tab").forEach(button => {
         button.addEventListener("click", () => selectMonitoringSensor(button.dataset.sensor));
     });
+
     document.querySelectorAll(".monitoring-subtab").forEach(button => {
         button.addEventListener("click", () => switchMonitoringPane(button.dataset.pane));
     });
-    $("historyRefreshButton").addEventListener("click", loadSoilHistory);
-    $("chartParameter").addEventListener("change", renderSoilHistoryChart);
 
 </script>
 
