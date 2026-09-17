@@ -1451,14 +1451,6 @@
             </div>
         </div>
 
-        <div class="weather-risk" style="margin-top:17px;">
-            <div class="risk-label">IRRIGATION RISK</div>
-            <div id="sidebarIrrigationRisk">--</div>
-            <p id="sidebarIrrigationMessage">
-                Waiting for soil and weather data...
-            </p>
-        </div>
-
         <div class="weather-note">
             Weather information is environmental data obtained separately
             from the soil sensor. Use it together with actual field
@@ -1634,6 +1626,8 @@
     const API_URL = "https://solumus-v.onrender.com";
     const NODE_ID = "SOLUMUS-V-01";
 
+    // Temporary map center only. The registered Node 01 location
+    // loaded from the server is the authoritative sensor position.
     const DEFAULT_LOCATION = {
         latitude: 10.017268,
         longitude: 123.595657
@@ -1644,9 +1638,6 @@
        It is NOT a scientifically validated sensor sensing range.
     */
     const ASSUMED_MONITORING_RADIUS_METERS = 5;
-
-    const LOCATION_STORAGE_KEY =
-        "solumus_v_node_01_location";
 
     let latestSoilData = null;
     let currentLocation = null;
@@ -1735,7 +1726,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
         map = new mapboxgl.Map({
     container: "fieldMap",
 
-    style: "mapbox://styles/mapbox/standard-satellite",
+    style: "mapbox://styles/mapbox/standard",
 
     center: [
         currentLocation.longitude,
@@ -1751,14 +1742,19 @@ if (!MAPBOX_ACCESS_TOKEN) {
     cooperativeGestures: true,
 
     config: {
-    basemap: {
-        showPlaceLabels: true,
-        showRoadLabels: true,
-        showPointOfInterestLabels: true,
-        lightPreset: "day"
+        basemap: {
+            show3dObjects: true,
+            show3dBuildings: true,
+            show3dTrees: true,
+            show3dLandmarks: true,
+            show3dFacades: true,
+            showPlaceLabels: true,
+            showRoadLabels: true,
+            showPointOfInterestLabels: true,
+            lightPreset: "day"
+        }
     }
-}
-        });
+});
 
         map.addControl(
             new mapboxgl.NavigationControl({
@@ -1791,10 +1787,9 @@ if (!MAPBOX_ACCESS_TOKEN) {
             map.setPitch(55);
             map.setBearing(-15);
 
-            displayNode(
-                currentLocation.latitude,
-                currentLocation.longitude
-            );
+            // Do not place a sensor marker at the temporary default.
+            // The marker is created only after the registered Node 01
+            // coordinates are loaded from the server.
 
             setTimeout(() => {
                 map.resize();
@@ -2163,7 +2158,6 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
             updateNodeInterface();
             refreshNodeVisuals();
-            updateIrrigationRiskSidebar();
 
         } catch (error) {
             console.error(
@@ -2408,16 +2402,24 @@ if (!MAPBOX_ACCESS_TOKEN) {
             );
 
             if (map) {
-                map.flyTo({
-                    center: [
-                        currentLocation.longitude,
-                        currentLocation.latitude
-                    ],
-                    zoom: 17,
-                    pitch: 60,
-                    bearing: -15,
-                    essential: true
-                });
+                const moveToRegisteredSensor = () => {
+                    map.flyTo({
+                        center: [
+                            currentLocation.longitude,
+                            currentLocation.latitude
+                        ],
+                        zoom: 17,
+                        pitch: 55,
+                        bearing: -15,
+                        essential: true
+                    });
+                };
+
+                if (map.isStyleLoaded()) {
+                    moveToRegisteredSensor();
+                } else {
+                    map.once("load", moveToRegisteredSensor);
+                }
             }
 
             loadWeather(
@@ -2768,95 +2770,52 @@ if (!MAPBOX_ACCESS_TOKEN) {
     ========================================================= */
 
     async function loadWeather(latitude, longitude) {
-        const lat = Number(latitude);
-        const lon = Number(longitude);
-
-        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-            console.warn("SOLUMUS-V: Invalid weather coordinates.", latitude, longitude);
+        if (
+            !Number.isFinite(Number(latitude)) ||
+            !Number.isFinite(Number(longitude))
+        ) {
             return;
         }
 
-        // Show the monitoring location immediately, even while the API is loading.
-        $("weatherLocation").textContent =
-            `Lat ${lat.toFixed(5)}, Lon ${lon.toFixed(5)}`;
-
-        $("weatherCondition").textContent = "Loading weather...";
-        $("weatherTemperature").textContent = "-- °C";
-        $("weatherHumidity").textContent = "-- %";
-        $("weatherRain").textContent = "-- mm";
-        $("weatherWind").textContent = "-- km/h";
-        $("weatherRisk").textContent = "--";
-        $("weatherRiskMessage").textContent = "Retrieving current weather conditions...";
-        $("forecastContainer").innerHTML = `
-            <div class="forecast-card">
-                Loading 3-day forecast...
-            </div>
-        `;
-        $("sidebarIrrigationRisk").textContent = "--";
-        $("sidebarIrrigationMessage").textContent =
-            "Waiting for soil and weather data...";
-
         try {
             /*
-             * Weather is loaded directly from Open-Meteo.
-             * Soil data continues to come from the SOLUMUS-V backend.
-             */
-            const params = new URLSearchParams({
-                latitude: lat.toString(),
-                longitude: lon.toString(),
-                current:
-                    "temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m",
-                daily:
-                    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max",
-                forecast_days: "3",
-                wind_speed_unit: "kmh",
-                timezone: "auto"
-            });
-
+               Weather is requested directly from Open-Meteo so the
+               Render backend's IP is not used for weather requests.
+               Soil data continues to use the SOLUMUS-V backend.
+            */
             const weatherUrl =
-                `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
-
-            console.log("SOLUMUS-V WEATHER REQUEST:", weatherUrl);
+                "https://api.open-meteo.com/v1/forecast" +
+                `?latitude=${encodeURIComponent(latitude)}` +
+                `&longitude=${encodeURIComponent(longitude)}` +
+                "&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m" +
+                "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max" +
+                "&forecast_days=3" +
+                "&wind_speed_unit=kmh" +
+                "&timezone=auto";
 
             const response = await fetch(weatherUrl, {
-                method: "GET",
-                mode: "cors",
-                cache: "no-store",
-                headers: {
-                    "Accept": "application/json"
-                }
+                cache: "no-store"
             });
 
             if (!response.ok) {
-                throw new Error(`Open-Meteo HTTP ${response.status}`);
+                throw new Error(
+                    `Weather HTTP ${response.status}`
+                );
             }
 
             const data = await response.json();
 
             if (!data.current || !data.daily) {
-                throw new Error("Open-Meteo returned incomplete weather data.");
+                throw new Error("Incomplete weather response.");
             }
 
-            console.log("SOLUMUS-V WEATHER RESPONSE:", data);
-
+            /* Build the same response shape used by renderWeather(). */
             const currentCode = Number(data.current.weather_code);
-            const probabilities = Array.isArray(
-                data.daily.precipitation_probability_max
-            )
-                ? data.daily.precipitation_probability_max
-                    .map(Number)
-                    .filter(Number.isFinite)
-                : [];
-
-            const rainProb = probabilities.length
-                ? Math.max(...probabilities)
+            const rainProb = Array.isArray(data.daily.precipitation_probability_max)
+                ? Math.max(...data.daily.precipitation_probability_max.map(Number).filter(Number.isFinite))
                 : 0;
-
-            const currentPrecip =
-                Number(data.current.precipitation) || 0;
-
-            const currentTemp =
-                Number(data.current.temperature_2m);
+            const currentPrecip = Number(data.current.precipitation) || 0;
+            const currentTemp = Number(data.current.temperature_2m);
 
             const risks = [];
 
@@ -2864,15 +2823,13 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 risks.push({
                     type: "rain",
                     level: "HIGH",
-                    message:
-                        "High chance of rainfall. Consider delaying field activities."
+                    message: "High chance of rainfall. Consider delaying field activities."
                 });
             } else if (rainProb >= 40 || currentPrecip > 0) {
                 risks.push({
                     type: "rain",
                     level: "MODERATE",
-                    message:
-                        "Moderate chance of rainfall. Monitor weather conditions before field activities."
+                    message: "Moderate chance of rainfall. Monitor weather conditions before field activities."
                 });
             }
 
@@ -2880,15 +2837,13 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 risks.push({
                     type: "heat",
                     level: "HIGH",
-                    message:
-                        "High temperature conditions detected. Consider heat stress and water requirements."
+                    message: "High temperature conditions detected. Consider heat stress and water requirements."
                 });
             } else if (currentTemp >= 32) {
                 risks.push({
                     type: "heat",
                     level: "MODERATE",
-                    message:
-                        "Elevated temperature conditions detected. Monitor crop water requirements."
+                    message: "Elevated temperature conditions detected. Monitor crop water requirements."
                 });
             }
 
@@ -2896,8 +2851,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 risks.push({
                     type: "thunderstorm",
                     level: "HIGH",
-                    message:
-                        "Thunderstorm conditions detected. Exercise caution during outdoor field activities."
+                    message: "Thunderstorm conditions detected. Exercise caution during outdoor field activities."
                 });
             }
 
@@ -2910,8 +2864,8 @@ if (!MAPBOX_ACCESS_TOKEN) {
             renderWeather({
                 success: true,
                 location: {
-                    latitude: lat,
-                    longitude: lon
+                    latitude: Number(latitude),
+                    longitude: Number(longitude)
                 },
                 current: data.current,
                 daily: data.daily,
@@ -2923,36 +2877,29 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 }
             });
 
-            updateIrrigationRiskSidebar({
-                rainProbability: rainProb,
-                currentPrecipitation: currentPrecip
-            });
-
         } catch (error) {
-            console.error("SOLUMUS-V weather error:", error);
+            console.error(
+                "Weather error:",
+                error
+            );
 
             $("weatherCondition").textContent =
                 "Weather unavailable";
+
             $("weatherTemperature").textContent =
                 "-- °C";
-            $("weatherHumidity").textContent =
-                "-- %";
-            $("weatherRain").textContent =
-                "-- mm";
-            $("weatherWind").textContent =
-                "-- km/h";
+
             $("weatherRisk").textContent =
-                "UNAVAILABLE";
+                "--";
+
             $("weatherRiskMessage").textContent =
-                "Weather data could not be retrieved from Open-Meteo.";
+                "Unable to retrieve weather data.";
+
             $("forecastContainer").innerHTML = `
                 <div class="forecast-card">
                     Weather data could not be loaded.
                 </div>
             `;
-            $("sidebarIrrigationRisk").textContent = "UNAVAILABLE";
-            $("sidebarIrrigationMessage").textContent =
-                "Irrigation assessment requires current weather data.";
         }
     }
 
@@ -3103,65 +3050,6 @@ if (!MAPBOX_ACCESS_TOKEN) {
             }).join("");
     }
 
-    function updateIrrigationRiskSidebar(weatherContext = {}) {
-        const moisture = Number(latestSoilData?.moisture);
-        const rainProbability = Number(weatherContext.rainProbability);
-
-        let risk = "MODERATE";
-        let message =
-            "Monitor soil moisture and forecast rainfall before irrigation.";
-
-        /*
-         * This is a simple decision-support indicator based on the
-         * currently available soil moisture and weather forecast.
-         * It is not a scientifically validated irrigation model.
-         */
-        if (Number.isFinite(moisture)) {
-            if (
-                moisture < 30 &&
-                (!Number.isFinite(rainProbability) || rainProbability < 40)
-            ) {
-                risk = "HIGH";
-                message =
-                    `Soil moisture is low (${moisture.toFixed(1)}%). ` +
-                    "Irrigation may be needed if field conditions confirm water stress.";
-            } else if (
-                moisture < 60 &&
-                (!Number.isFinite(rainProbability) || rainProbability < 70)
-            ) {
-                risk = "MODERATE";
-                message =
-                    `Soil moisture is ${moisture.toFixed(1)}%. ` +
-                    "Monitor the field and forecast before irrigating.";
-            } else {
-                risk = "LOW";
-                message =
-                    `Soil moisture is ${moisture.toFixed(1)}%. ` +
-                    "Immediate irrigation demand is not indicated by the current readings.";
-            }
-        } else if (Number.isFinite(rainProbability)) {
-            if (rainProbability >= 70) {
-                risk = "LOW";
-                message =
-                    `Rain probability is ${rainProbability}%. ` +
-                    "Consider postponing irrigation and checking field drainage.";
-            } else if (rainProbability >= 40) {
-                risk = "MODERATE";
-                message =
-                    `Rain probability is ${rainProbability}%. ` +
-                    "Monitor conditions before irrigating.";
-            } else {
-                risk = "HIGH";
-                message =
-                    `Rain probability is only ${rainProbability}%. ` +
-                    "Check soil moisture before deciding on irrigation.";
-            }
-        }
-
-        $("sidebarIrrigationRisk").textContent = risk;
-        $("sidebarIrrigationMessage").textContent = message;
-    }
-
     function openWeatherSidebar() {
         $("weatherSidebar").classList.add("open");
         $("weatherSidebar").setAttribute(
@@ -3174,9 +3062,6 @@ if (!MAPBOX_ACCESS_TOKEN) {
                 currentLocation.latitude,
                 currentLocation.longitude
             );
-        } else {
-            $("weatherCondition").textContent = "Loading location...";
-            loadSensorLocation();
         }
     }
 
@@ -3269,6 +3154,13 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
     loadSensorLocation();
     loadSoilData();
+
+    if (currentLocation) {
+        loadWeather(
+            currentLocation.latitude,
+            currentLocation.longitude
+        );
+    }
 
     setInterval(
         loadSoilData,
