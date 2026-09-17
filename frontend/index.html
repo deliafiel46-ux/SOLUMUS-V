@@ -2245,7 +2245,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
        LOCATION MODAL
     ========================================================= */
 
-    function openLocationModal() {
+    async function openLocationModal() {
         $("locationModal").classList.add("open");
         $("locationModal").setAttribute(
             "aria-hidden",
@@ -2427,7 +2427,7 @@ if (!MAPBOX_ACCESS_TOKEN) {
         );
     }
 
-    function saveNodeLocation() {
+    async function saveNodeLocation() {
         if (!currentLocation) return;
 
         try {
