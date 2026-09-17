@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="/config.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#164b3b">
     <title>SOLUMUS-V | Field Monitoring</title>
 
-    <!-- Leaflet map CSS -->
+    <!-- Mapbox GL JS -->
     <link
+        href="https://api.mapbox.com/mapbox-gl-js/v3.30.0/mapbox-gl.css"
         rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
     <style>
@@ -154,10 +155,6 @@
             width: 100%;
             height: 100%;
             min-height: 560px;
-        }
-
-        .leaflet-container {
-            font-family: Arial, Helvetica, sans-serif;
         }
 
         .map-control-panel {
@@ -1002,6 +999,129 @@
                 align-self: flex-start;
             }
         }
+
+        /* =========================================================
+           MAPBOX 3D
+        ========================================================= */
+
+        #fieldMap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 560px;
+            overflow: hidden;
+        }
+
+        .mapboxgl-map,
+        .mapboxgl-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .mapboxgl-ctrl-group {
+            border-radius: 10px !important;
+            overflow: hidden;
+            box-shadow: 0 7px 20px rgba(0,0,0,.16) !important;
+        }
+
+        .mapboxgl-ctrl-group button {
+            width: 36px;
+            height: 36px;
+        }
+
+        .mapbox-node-marker {
+            width: 46px;
+            height: 46px;
+            position: relative;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .mapbox-node-marker .sensor-marker {
+            width: 46px;
+            height: 46px;
+        }
+
+        .mapbox-node-marker .sensor-marker-pulse {
+            width: 34px;
+            height: 34px;
+        }
+
+        .mapbox-node-marker .sensor-marker-dot {
+            width: 18px;
+            height: 18px;
+        }
+
+        .coverage-label {
+            pointer-events: none;
+            white-space: nowrap;
+            transform: translateY(22px);
+            padding: 4px 7px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.94);
+            border: 1px solid rgba(22,75,59,.18);
+            box-shadow: 0 3px 10px rgba(0,0,0,.13);
+            color: var(--primary);
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .4px;
+        }
+
+        .user-location-marker {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #164b3b;
+            border: 3px solid white;
+            box-shadow: 0 2px 9px rgba(0,0,0,.35);
+        }
+
+        .mapboxgl-popup-content {
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,.18);
+        }
+
+        .mapboxgl-popup-close-button {
+            font-size: 20px;
+            padding: 4px 7px;
+        }
+
+        .mapbox-3d-badge {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            z-index: 800;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: rgba(22,75,59,.92);
+            color: white;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: .7px;
+            box-shadow: 0 7px 18px rgba(0,0,0,.18);
+            pointer-events: none;
+        }
+
+        @media (max-width: 760px) {
+            .mapbox-3d-badge {
+                right: 9px;
+                top: 9px;
+                padding: 7px 9px;
+                font-size: 8px;
+            }
+
+            .mapboxgl-ctrl-group button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .coverage-label {
+                font-size: 8px;
+                padding: 4px 6px;
+            }
+        }
+
     </style>
 </head>
 
@@ -1039,6 +1159,7 @@
 
     <div class="map-shell">
         <div id="fieldMap"></div>
+        <div class="mapbox-3d-badge">3D FIELD MAP</div>
 
         <div class="map-control-panel">
             <button id="locateButton" class="map-control-button primary" type="button">
@@ -1299,8 +1420,8 @@
     </div>
 </div>
 
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Mapbox GL JS -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.30.0/mapbox-gl.js"></script>
 
 <script>
     /* =========================================================
@@ -1391,48 +1512,86 @@
     }
 
     /* =========================================================
-       MAP
+       MAPBOX 3D MAP
     ========================================================= */
 
-    function initializeMap() {
-        map = L.map("fieldMap", {
-            zoomControl: true,
-            attributionControl: true
-        }).setView(
-            [
-                DEFAULT_LOCATION.latitude,
-                DEFAULT_LOCATION.longitude
-            ],
-            15
-        );
+    const MAPBOX_ACCESS_TOKEN =
+    window.SOLUMUS_V_CONFIG?.MAPBOX_TOKEN || "";
 
-        L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                maxZoom: 20,
-                attribution:
-                    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }
-        ).addTo(map);
+if (!MAPBOX_ACCESS_TOKEN) {
+    console.error("SOLUMUS-V: Mapbox access token is missing.");
+}
+
+    let nodeCoverageLabel = null;
+
+    function initializeMap() {
+        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
         const saved = loadSavedLocation();
 
-        if (saved) {
-            currentLocation = saved;
-        } else {
-            currentLocation = {
-                ...DEFAULT_LOCATION
-            };
-        }
+        currentLocation = saved
+            ? saved
+            : { ...DEFAULT_LOCATION };
 
-        displayNode(
-            currentLocation.latitude,
-            currentLocation.longitude
+        map = new mapboxgl.Map({
+            container: "fieldMap",
+            style: "mapbox://styles/mapbox/standard-satellite",
+            center: [
+                currentLocation.longitude,
+                currentLocation.latitude
+            ],
+            zoom: 15,
+            pitch: 55,
+            bearing: -15,
+            antialias: true,
+            attributionControl: true,
+            cooperativeGestures: true
+        });
+
+        map.addControl(
+            new mapboxgl.NavigationControl({
+                visualizePitch: true
+            }),
+            "top-right"
         );
 
-        setTimeout(() => {
-            map.invalidateSize();
-        }, 250);
+        map.on("load", () => {
+            /*
+               Mapbox Terrain-DEM provides the 3D terrain elevation.
+               The terrain is intentionally only a visual geographic
+               representation; it is not a sensor measurement.
+            */
+            map.addSource("mapbox-dem", {
+                type: "raster-dem",
+                url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+                tileSize: 512,
+                maxzoom: 14
+            });
+
+            map.setTerrain({
+                source: "mapbox-dem",
+                exaggeration: 1.15
+            });
+
+            /*
+               Start with a tilted 3D field view.
+            */
+            map.setPitch(55);
+            map.setBearing(-15);
+
+            displayNode(
+                currentLocation.latitude,
+                currentLocation.longitude
+            );
+
+            setTimeout(() => {
+                map.resize();
+            }, 250);
+        });
+
+        map.on("error", event => {
+            console.error("Mapbox error:", event?.error || event);
+        });
     }
 
     function getHealthScore() {
@@ -1483,48 +1642,88 @@
     }
 
     function createNodeIcon() {
-        return L.divIcon({
-            className: "",
-            html: `
-                <div class="sensor-marker ${getHealthClass()}">
-                    <div class="sensor-marker-pulse"></div>
-                    <div class="sensor-marker-dot"></div>
-                </div>
-            `,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15],
-            popupAnchor: [0, -15]
-        });
-    }
-
-    function createNodePopup() {
-        const score = latestSoilData
-            ? getHealthScore()
-            : null;
-
-        const category = getHealthCategory();
-
-        return `
-            <div class="map-node-popup">
-                <div class="map-node-popup-title">
-                    ${escapeHTML(NODE_ID)}
-                </div>
-
-                <div class="map-node-popup-status">
-                    Overall Soil Health:
-                    ${score === null ? "--" : score + "%"}
-                    · ${escapeHTML(category)}
-                </div>
-
-                <button
-                    class="map-node-popup-button"
-                    type="button"
-                    onclick="openNodeModal()"
-                >
-                    VIEW SOIL DATA
-                </button>
+        const wrapper = document.createElement("div");
+        wrapper.className = "mapbox-node-marker";
+        wrapper.setAttribute("role", "button");
+        wrapper.setAttribute(
+            "aria-label",
+            `Open soil data for ${NODE_ID}`
+        );
+        wrapper.innerHTML = `
+            <div class="sensor-marker ${getHealthClass()}">
+                <div class="sensor-marker-pulse"></div>
+                <div class="sensor-marker-dot"></div>
             </div>
         `;
+
+        return wrapper;
+    }
+
+    function createCoverageGeoJSON(latitude, longitude, radiusMeters) {
+        const coordinates = [];
+        const earthRadius = 6371008.8;
+        const angularDistance = radiusMeters / earthRadius;
+        const lat1 = latitude * Math.PI / 180;
+        const lon1 = longitude * Math.PI / 180;
+
+        for (let i = 0; i <= 96; i++) {
+            const bearing = (i / 96) * 2 * Math.PI;
+
+            const lat2 = Math.asin(
+                Math.sin(lat1) * Math.cos(angularDistance) +
+                Math.cos(lat1) * Math.sin(angularDistance) *
+                Math.cos(bearing)
+            );
+
+            const lon2 = lon1 + Math.atan2(
+                Math.sin(bearing) * Math.sin(angularDistance) *
+                Math.cos(lat1),
+                Math.cos(angularDistance) -
+                Math.sin(lat1) * Math.sin(lat2)
+            );
+
+            coordinates.push([
+                lon2 * 180 / Math.PI,
+                lat2 * 180 / Math.PI
+            ]);
+        }
+
+        return {
+            type: "Feature",
+            geometry: {
+                type: "Polygon",
+                coordinates: [coordinates]
+            },
+            properties: {
+                radiusMeters
+            }
+        };
+    }
+
+    function removeMapboxNodeLayers() {
+        if (!map) return;
+
+        if (map.getLayer("node-coverage-outline")) {
+            map.removeLayer("node-coverage-outline");
+        }
+
+        if (map.getLayer("node-coverage-fill")) {
+            map.removeLayer("node-coverage-fill");
+        }
+
+        if (map.getSource("node-coverage")) {
+            map.removeSource("node-coverage");
+        }
+
+        if (nodeMarker) {
+            nodeMarker.remove();
+            nodeMarker = null;
+        }
+
+        if (nodeCoverageLabel) {
+            nodeCoverageLabel.remove();
+            nodeCoverageLabel = null;
+        }
     }
 
     function displayNode(latitude, longitude) {
@@ -1539,52 +1738,95 @@
             return;
         }
 
+        /*
+           Mapbox style/layers must be ready before adding GeoJSON
+           sources and custom layers.
+        */
+        if (!map.isStyleLoaded()) {
+            map.once("load", () => {
+                displayNode(lat, lng);
+            });
+            return;
+        }
+
         currentLocation = {
             latitude: lat,
             longitude: lng
         };
 
-        if (nodeMarker) {
-            map.removeLayer(nodeMarker);
-        }
+        removeMapboxNodeLayers();
 
-        if (nodeCoverageCircle) {
-            map.removeLayer(nodeCoverageCircle);
-        }
-
-        nodeMarker = L.marker(
-            [lat, lng],
-            {
-                icon: createNodeIcon(),
-                keyboard: true,
-                title: NODE_ID
-            }
-        ).addTo(map);
+        const coverageColor = getCoverageColor();
 
         /*
-           IMPORTANT:
-           Clicking/tapping the sensor node opens the soil modal directly.
-           No Leaflet popup is used, so mobile users get one clear interaction.
+           Sensor marker.
         */
-        nodeMarker.on("click", () => {
-            openNodeModal();
+        const markerElement = createNodeIcon();
+
+        nodeMarker = new mapboxgl.Marker({
+            element: markerElement,
+            anchor: "center"
+        })
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+        markerElement.addEventListener(
+            "click",
+            () => {
+                openNodeModal();
+            },
+            { passive: true }
+        );
+
+        /*
+           Visible assumed monitoring/sampling coverage area.
+           This is a map visualization, NOT a validated sensor range.
+        */
+        map.addSource("node-coverage", {
+            type: "geojson",
+            data: createCoverageGeoJSON(
+                lat,
+                lng,
+                ASSUMED_MONITORING_RADIUS_METERS
+            )
         });
 
-        nodeCoverageCircle = L.circle(
-            [lat, lng],
-            {
-                radius: ASSUMED_MONITORING_RADIUS_METERS,
-                color: getCoverageColor(),
-                fillColor: getCoverageColor(),
-                fillOpacity: 0.10,
-                weight: 2
+        map.addLayer({
+            id: "node-coverage-fill",
+            type: "fill",
+            source: "node-coverage",
+            paint: {
+                "fill-color": coverageColor,
+                "fill-opacity": 0.13
             }
-        ).addTo(map);
+        });
+
+        map.addLayer({
+            id: "node-coverage-outline",
+            type: "line",
+            source: "node-coverage",
+            paint: {
+                "line-color": coverageColor,
+                "line-width": 2.5,
+                "line-opacity": 0.88
+            }
+        });
 
         /*
-           Keep the marker above the coverage circle.
+           Small label makes the coverage radius immediately visible
+           to a judge without requiring them to infer it from the ring.
         */
-        nodeMarker.setZIndexOffset(1000);
+        const labelElement = document.createElement("div");
+        labelElement.className = "coverage-label";
+        labelElement.textContent =
+            `${ASSUMED_MONITORING_RADIUS_METERS} m assumed coverage`;
+
+        nodeCoverageLabel = new mapboxgl.Marker({
+            element: labelElement,
+            anchor: "top"
+        })
+            .setLngLat([lng, lat])
+            .addTo(map);
     }
 
     function refreshNodeVisuals() {
@@ -2054,28 +2296,32 @@
                     "success"
                 );
 
-                map.setView(
-                    [latitude, longitude],
-                    18
-                );
+                map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 18,
+                    pitch: 60,
+                    bearing: -15,
+                    essential: true
+                });
 
                 if (userLocationMarker) {
-                    map.removeLayer(
-                        userLocationMarker
-                    );
+                    userLocationMarker.remove();
                 }
 
+                const userElement = document.createElement("div");
+                userElement.className = "user-location-marker";
+                userElement.setAttribute(
+                    "aria-label",
+                    "Current device location"
+                );
+
                 userLocationMarker =
-                    L.circleMarker(
-                        [latitude, longitude],
-                        {
-                            radius: 7,
-                            color: "#164b3b",
-                            fillColor: "#2f725a",
-                            fillOpacity: .9,
-                            weight: 3
-                        }
-                    ).addTo(map);
+                    new mapboxgl.Marker({
+                        element: userElement,
+                        anchor: "center"
+                    })
+                    .setLngLat([longitude, latitude])
+                    .addTo(map);
 
                 $("captureLocationButton").disabled = false;
             },
@@ -2129,13 +2375,16 @@
             currentLocation.longitude
         );
 
-        map.setView(
-            [
-                currentLocation.latitude,
-                currentLocation.longitude
+        map.flyTo({
+            center: [
+                currentLocation.longitude,
+                currentLocation.latitude
             ],
-            17
-        );
+            zoom: 17,
+            pitch: 60,
+            bearing: -15,
+            essential: true
+        });
 
         setLocationStatus(
             "Node 01 location saved on this monitoring device. The map will use this fixed location until it is intentionally changed.",
@@ -2170,33 +2419,32 @@
                 const longitude =
                     position.coords.longitude;
 
-                map.setView(
-                    [latitude, longitude],
-                    18
-                );
+                map.flyTo({
+                    center: [longitude, latitude],
+                    zoom: 18,
+                    pitch: 60,
+                    bearing: -15,
+                    essential: true
+                });
 
                 if (userLocationMarker) {
-                    map.removeLayer(
-                        userLocationMarker
-                    );
+                    userLocationMarker.remove();
                 }
 
+                const userElement = document.createElement("div");
+                userElement.className = "user-location-marker";
+                userElement.setAttribute(
+                    "aria-label",
+                    "Current device location"
+                );
+
                 userLocationMarker =
-                    L.circleMarker(
-                        [latitude, longitude],
-                        {
-                            radius: 7,
-                            color: "#164b3b",
-                            fillColor: "#2f725a",
-                            fillOpacity: .9,
-                            weight: 3
-                        }
-                    )
-                    .addTo(map)
-                    .bindPopup(
-                        "Current device location"
-                    )
-                    .openPopup();
+                    new mapboxgl.Marker({
+                        element: userElement,
+                        anchor: "center"
+                    })
+                    .setLngLat([longitude, latitude])
+                    .addTo(map);
             },
 
             error => {
