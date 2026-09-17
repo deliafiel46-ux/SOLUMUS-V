@@ -960,9 +960,24 @@ app.get("/api/weather", async (req, res) => {
             `&forecast_days=3` +
             `&timezone=auto`;
 
-        const response = await axios.get(weatherUrl);
+        console.log("Requesting weather:", weatherUrl);
+
+        const response = await axios.get(weatherUrl, {
+            timeout: 15000
+        });
 
         const weather = response.data;
+
+        // Make sure Open-Meteo returned the expected data
+        if (
+            !weather ||
+            !weather.current ||
+            !weather.daily
+        ) {
+            throw new Error(
+                "Weather provider returned incomplete data."
+            );
+        }
 
         const weatherRisk = getWeatherRisk(
             weather.current,
