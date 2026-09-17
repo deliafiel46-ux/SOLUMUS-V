@@ -1524,85 +1524,84 @@ if (!MAPBOX_ACCESS_TOKEN) {
 
     let nodeCoverageLabel = null;
 
-    function initializeMap() {
-        mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+   function initializeMap() {
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-        currentLocation = { ...DEFAULT_LOCATION };
+    currentLocation = { ...DEFAULT_LOCATION };
 
-        map = new mapboxgl.Map({
-            container: "fieldMap",
+    map = new mapboxgl.Map({
+        container: "fieldMap",
 
-            style: "mapbox://styles/mapbox/standard-satellite",
+        // MAPBOX STANDARD — non-satellite 3D map
+        style: "mapbox://styles/mapbox/standard",
 
-            center: [
-                currentLocation.longitude,
-                currentLocation.latitude
-            ],
+        center: [
+            currentLocation.longitude,
+            currentLocation.latitude
+        ],
 
-            zoom: 16,
-            pitch: 65,
-            bearing: -20,
+        zoom: 16,
+        pitch: 65,
+        bearing: -20,
 
-            antialias: true,
-            attributionControl: true,
-            cooperativeGestures: true,
+        antialias: true,
+        attributionControl: true,
+        cooperativeGestures: true,
 
-            config: {
-                basemap: {
-                    showPlaceLabels: true,
-                    showRoadLabels: true,
-                    showPointOfInterestLabels: true,
-                    lightPreset: "day"
-                }
+        config: {
+            basemap: {
+                showPlaceLabels: true,
+                showRoadLabels: true,
+                showPointOfInterestLabels: true,
+                lightPreset: "day"
             }
+        }
+    });
+
+    map.addControl(
+        new mapboxgl.NavigationControl({
+            visualizePitch: true
+        }),
+        "top-right"
+    );
+
+    map.on("load", () => {
+
+        // 3D terrain
+        map.addSource("mapbox-dem", {
+            type: "raster-dem",
+            url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+            tileSize: 512,
+            maxzoom: 14
         });
 
-        map.addControl(
-            new mapboxgl.NavigationControl({
-                visualizePitch: true
-            }),
-            "top-right"
+        map.setTerrain({
+            source: "mapbox-dem",
+            exaggeration: 1.35
+        });
+
+        // 3D camera perspective
+        map.setPitch(65);
+        map.setBearing(-20);
+
+        // Display SOLUMUS-V sensor node
+        displayNode(
+            currentLocation.latitude,
+            currentLocation.longitude
         );
 
-        map.on("load", () => {
-            /*
-               Mapbox Terrain-DEM provides the 3D terrain elevation.
-               The terrain is intentionally only a visual geographic
-               representation; it is not a sensor measurement.
-            */
-            map.addSource("mapbox-dem", {
-                type: "raster-dem",
-                url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-                tileSize: 512,
-                maxzoom: 14
-            });
+        setTimeout(() => {
+            map.resize();
+        }, 250);
+    });
 
-            map.setTerrain({
-                source: "mapbox-dem",
-                exaggeration: 1.35
-            });
-
-            /*
-               Start with a tilted 3D field view.
-            */
-            map.setPitch(65);
-            map.setBearing(-20);
-
-            displayNode(
-                currentLocation.latitude,
-                currentLocation.longitude
-            );
-
-            setTimeout(() => {
-                map.resize();
-            }, 250);
-        });
-
-        map.on("error", event => {
-            console.error("Mapbox error:", event?.error || event);
-        });
-    }
-
+    map.on("error", event => {
+        console.error(
+            "Mapbox error:",
+            event?.error || event
+        );
+    });
+}
     function getHealthScore() {
         return latestSoilData
             ? number(
